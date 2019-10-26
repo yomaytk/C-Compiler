@@ -1,12 +1,12 @@
 CFLAGS=-std=c11 -g -static
 
-9cc: 9cc.c
-	gcc -o 9cc 9cc.c
+msscc: msscc.c
+	gcc -o msscc msscc.c
 
-test: 9cc
+test: msscc
 	./test.sh
 
 clean:
-	rm -f 9cc *.o *~ tmp*
+	rm -f msscc *.o *~ tmp*
 
 .PHONY: test clean
