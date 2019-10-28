@@ -1,55 +1,33 @@
 .intel_syntax noprefix
 .global main
 main:
-	push	78
-	push	6
-	pop	rdi
-	pop	rax
-	add	rax, rdi
-	push	rax
-	push	32
+	push	0
+	push	10
 	pop	rdi
 	pop	rax
 	sub	rax, rdi
 	push	rax
-	push	6
+	push	20
 	pop	rdi
 	pop	rax
 	add	rax, rdi
 	push	rax
-	push	58
-	push	62
+	push	0
 	pop	rdi
 	pop	rax
 	sub	rax, rdi
 	push	rax
-	push	125
+	push	0
+	push	20
+	pop	rdi
+	pop	rax
+	sub	rax, rdi
+	push	rax
 	pop	rdi
 	pop	rax
 	add	rax, rdi
 	push	rax
-	push	1
-	pop	rdi
-	pop	rax
-	imul	rax, rdi
-	push	rax
-	push	1
-	pop	rdi
-	pop	rax
-	cqo
-	idiv	rdi
-	push	rax
-	push	2
-	pop	rdi
-	pop	rax
-	imul	rax, rdi
-	push	rax
-	push	2
-	pop	rdi
-	pop	rax
-	cqo
-	idiv	rdi
-	push	rax
+	push	20
 	pop	rdi
 	pop	rax
 	add	rax, rdi

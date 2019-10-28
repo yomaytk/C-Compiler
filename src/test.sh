@@ -11,6 +11,7 @@ try() {
 	if [ "$actual" = "$expected" ]; then
 		echo "$input => $actual"
 	else
+		echo -e "\e[31mFAILED\e[m"
 		echo "$input => $expected expected, but got $actual"
 		exit 1
 	fi
@@ -25,5 +26,7 @@ try 47 '5+6*7'
 try 15 '5*(9-6)'
 try 4 '(3+5)/2'
 try 179 "(((78))+6-32+ 6 +((58-62)+125)*1/1*2/2)"
+try 10 "-(+20-30-0)"
+try 10 "-10+20-0+(-20)+(+20)"
 
-echo OK
+echo -e "\e[32mOK\e[m"
