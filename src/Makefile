@@ -1,7 +1,7 @@
 CFLAGS=-std=c11 -g -static
 
-msscc: msscc.c parse.c
-	gcc -o msscc msscc.c parse.c
+msscc: main.c parse.c codegen.c
+	gcc -o msscc main.c parse.c codegen.c
 
 test: msscc
 	./test.sh

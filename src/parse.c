@@ -4,7 +4,99 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "header.h"
+#include "mss9cc.h"
+
+// 次のトークンが期待している記号のときには、トークンを1つ読み進めて
+// 真を返す。それ以外の場合には偽を返す。
+bool consume(char *op) {
+	// if (token->kind != TK_RESERVED || token->str[0] != op)
+	if(token->kind != TK_RESERVED || token->len != strlen(op) || memcmp(token->str, op, token->len)){
+		return false;
+	}
+	token = token->next;
+	return true;
+}
+
+// 次のトークンが期待している記号のときには、トークンを1つ読み進める。
+// それ以外の場合にはエラーを報告する。
+void expect(char op) {
+	if (token->kind != TK_RESERVED || token->str[0] != op)
+	error_at(token->str, "'%c'ではありません", op);
+	token = token->next;
+}
+
+// 次のトークンが数値の場合、トークンを1つ読み進めてその数値を返す。
+// それ以外の場合にはエラーを報告する。
+int expect_number() {
+	if (token->kind != TK_NUM)
+	error_at(token->str, "数ではありません");
+	int val = token->val;
+	token = token->next;
+	return val;
+}
+
+bool at_eof() {
+	return token->kind == TK_EOF;
+}
+
+// 新しいトークンを作成してcurに繋げる
+Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
+	Token *tok = calloc(1, sizeof(Token));
+	tok->kind = kind;
+	tok->str = str;
+	if(len > 0)	tok->len = len;
+	cur->next = tok;
+	return tok;
+}
+
+// 入力文字列pをトークナイズしてそれを返す
+Token *tokenize(char *p) {
+	Token head;
+	head.next = NULL;
+	Token *cur = &head;
+
+	while (*p) {
+	// 空白文字をスキップ
+		if (isspace(*p)) {
+			p++;
+			continue;
+		}
+
+		if (*p == '+' || *p == '-' || *p == '*' 
+				|| *p == '/' || *p == '(' || *p == ')') {
+			cur = new_token(TK_RESERVED, cur, p++, 1);
+			continue;
+		}
+
+		if(!strncmp(p, "==", 2) || !strncmp(p, "!=", 2) 
+				|| !strncmp(p, ">=", 2) || !strncmp(p, "<=", 2)){
+			cur = new_token(TK_RESERVED, cur, p, 2);
+			p++;
+			p++;
+			continue;
+		}
+
+		if(*p == '<' || *p == '>'){
+			cur = new_token(TK_RESERVED, cur, p++, 1);
+			continue;
+		}
+
+		if (isdigit(*p)) {
+			cur = new_token(TK_NUM, cur, p, -1);
+			cur->val = strtol(p, &p, 10);
+			continue;
+		}
+
+		error_at(p, "トークナイズできません");
+	}
+
+	new_token(TK_EOF, cur, p, -1);
+	return head.next;
+}
+
+/*
+	make parser tree
+*/
 
 Node *new_node(Nodekind kind, Node *lhs, Node *rhs){
 	Node *node = calloc(1, sizeof(Node));
@@ -20,20 +112,6 @@ Node *new_node_num(int val){
 	node->val = val;
 	return node;
 }
-
-// Node *expr(){
-// 	Node *node = mul();
-
-// 	for(;;){
-// 		if(consume("+")){
-// 			node = new_node(ND_ADD, node, mul());
-// 		}else if(consume("-")){
-// 			node = new_node(ND_SUB, node, mul());
-// 		}else{
-// 			return node;
-// 		}
-// 	}
-// }
 
 Node *expr(){
 	return equarity();
@@ -122,57 +200,4 @@ Node *primary(){
 	}
 
 	return new_node_num(expect_number());
-}
-
-void gen(Node *node){
-
-	Nodekind kind = node->kind;
-
-	if(kind == ND_NUM){
-		printf("\tpush\t%d\n", node->val);
-		return;
-	}
-
-	gen(node->lhs);
-	gen(node->rhs);
-
-	printf("\tpop\trdi\n");
-	printf("\tpop\trax\n");
-
-	if(kind == ND_ADD){					// +
-		printf("\tadd\trax, rdi\n");
-	}else if(kind == ND_SUB){			// -
-		printf("\tsub\trax, rdi\n");
-	}else if(kind == ND_MUL){			// *
-		printf("\timul\trax, rdi\n");
-	}else if(kind == ND_DIV){			// /
-		printf("\tcqo\n");
-		printf("\tidiv\trdi\n");
-	}else if(kind == ND_EQU){			// ==
-		printf("\tcmp\trax, rdi\n");
-		printf("\tsete\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_NEQ){			// !=
-		printf("\tcmp\trax, rdi\n");
-		printf("\tsetne\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_RIL){			// <
-		printf("\tcmp\trax, rdi\n");
-		printf("\tsetl\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_RLE){			// <=
-		printf("\tcmp\trax, rdi\n");
-		printf("\tsetle\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_LIL){			// >
-		printf("\tcmp\trdi, rax\n");
-		printf("\tsetl\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_LLE){			// >=
-		printf("\tcmp\trdi, rax\n");
-		printf("\tsetle\tal\n");
-		printf("\tmovzb\trax, al\n");
-	}
-
-	printf("\tpush\trax\n");
 }
