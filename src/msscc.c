@@ -88,6 +88,19 @@ Token *tokenize(char *p) {
 			continue;
 		}
 
+		if(!strncmp(p, "==", 2) || !strncmp(p, "!=", 2) 
+				|| !strncmp(p, ">=", 2) || !strncmp(p, "<=", 2)){
+			cur = new_token(TK_RESERVED, cur, p);
+			p++;
+			p++;
+			continue;
+		}
+
+		if(*p == '<' || *p == '>'){
+			cur = new_token(TK_RESERVED, cur, p++);
+			continue;
+		}
+
 		if (isdigit(*p)) {
 			cur = new_token(TK_NUM, cur, p);
 			cur->val = strtol(p, &p, 10);

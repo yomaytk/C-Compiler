@@ -49,7 +49,7 @@ struct Token {
 	char *str;      // トークン文字列
 	int len;
 };
-bool consume(char op);
+bool consume(char *op);
 int expect_number();
 void expect(char op);
 int expect_number();
