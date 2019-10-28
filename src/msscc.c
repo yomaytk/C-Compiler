@@ -61,10 +61,11 @@ bool at_eof() {
 }
 
 // 新しいトークンを作成してcurに繋げる
-Token *new_token(TokenKind kind, Token *cur, char *str) {
+Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 	Token *tok = calloc(1, sizeof(Token));
 	tok->kind = kind;
 	tok->str = str;
+	if(len > 0)	tok->len = len;
 	cur->next = tok;
 	return tok;
 }
@@ -84,25 +85,25 @@ Token *tokenize(char *p) {
 
 		if (*p == '+' || *p == '-' || *p == '*' 
 				|| *p == '/' || *p == '(' || *p == ')') {
-			cur = new_token(TK_RESERVED, cur, p++);
+			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
 
 		if(!strncmp(p, "==", 2) || !strncmp(p, "!=", 2) 
 				|| !strncmp(p, ">=", 2) || !strncmp(p, "<=", 2)){
-			cur = new_token(TK_RESERVED, cur, p);
+			cur = new_token(TK_RESERVED, cur, p, 2);
 			p++;
 			p++;
 			continue;
 		}
 
 		if(*p == '<' || *p == '>'){
-			cur = new_token(TK_RESERVED, cur, p++);
+			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
 
 		if (isdigit(*p)) {
-			cur = new_token(TK_NUM, cur, p);
+			cur = new_token(TK_NUM, cur, p, -1);
 			cur->val = strtol(p, &p, 10);
 			continue;
 		}
@@ -110,7 +111,7 @@ Token *tokenize(char *p) {
 		error_at(p, "トークナイズできません");
 	}
 
-	new_token(TK_EOF, cur, p);
+	new_token(TK_EOF, cur, p, -1);
 	return head.next;
 }
 
