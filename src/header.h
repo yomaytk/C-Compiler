@@ -1,10 +1,16 @@
 /* ~~~~~ parse ~~~~~ */
 typedef enum{
-	ND_ADD,
-	ND_SUB,
-	ND_MUL,
-	ND_DIV,
-	ND_NUM,
+	ND_ADD,		// +
+	ND_SUB,		// -
+	ND_MUL,		// *
+	ND_DIV,		// /
+	ND_NUM,		// digit
+	ND_EQU,		// ==
+	ND_NEQ,		// !=
+	ND_RIL,		// <
+	ND_RLE,		// <=
+	ND_LIL, 	// >
+	ND_LLE,		// >=
 } Nodekind;
 
 typedef struct Node Node;
@@ -17,6 +23,9 @@ struct Node{
 };
 
 Node *expr();
+Node *equarity();
+Node *relational();
+Node *add();
 Node *mul();
 Node *unary();
 Node *primary();
@@ -38,6 +47,7 @@ struct Token {
 	Token *next;    // 次の入力トークン
 	int val;        // kindがTK_NUMの場合、その数値
 	char *str;      // トークン文字列
+	int len;
 };
 bool consume(char op);
 int expect_number();

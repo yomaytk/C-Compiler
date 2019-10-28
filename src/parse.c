@@ -22,14 +22,51 @@ Node *new_node_num(int val){
 }
 
 Node *expr(){
-	
-	Node *node = mul();
-	// printf("fefefefe;;;\n");
+	return equarity();
+}
+
+Node *equarity(){
+
+	Node *node = relational();
 
 	for(;;){
-		if(consume('+')){
+		if(consume("==")){
+			node = new_node(ND_EQU, node, relational());
+		}else if(consume("!=")){
+			node = new_node(ND_NEQ, node, relational());
+		}else{
+			return node;
+		}
+	}
+}
+
+Node *relational(){
+
+	Node * node = add();
+
+	for(;;){
+		if(consume("<")){
+			node = new_node(ND_RIL, node, add());
+		}else if(consume("<=")){
+			node = new_node(ND_RLE, node, add());
+		}else if(consume(">")){
+			node = new_node(ND_LIL, node, add());
+		}else if(consume(">=")){
+			node = new_node(ND_LLE, node, add());
+		}else{
+			return node;
+		}
+	}
+}
+
+Node *add(){
+
+	Node *node = mul();
+
+	for(;;){
+		if(consume("+")){
 			node = new_node(ND_ADD, node, mul());
-		}else if(consume('-')){
+		}else if(consume("-")){
 			node = new_node(ND_SUB, node, mul());
 		}else{
 			return node;
@@ -40,12 +77,11 @@ Node *expr(){
 Node *mul(){
 
 	Node *node = unary();
-	// printf("jijijij;;;\n");
 
 	for(;;){
-		if(consume('*')){
+		if(consume("*")){
 			node = new_node(ND_MUL, node, unary());
-		}else if(consume('/')){
+		}else if(consume("/")){
 			node = new_node(ND_DIV, node, unary());
 		}else{
 			return node;
@@ -54,9 +90,9 @@ Node *mul(){
 }
 
 Node *unary(){
-	if(consume('+')){
+	if(consume("+")){
 		return primary();
-	}else if(consume('-')){
+	}else if(consume("-")){
 		return new_node(ND_SUB, new_node_num(0), primary());
 	}else{
 		return primary();
@@ -64,8 +100,6 @@ Node *unary(){
 }
 
 Node *primary(){
-
-	// printf("nmnmnmnmn;;;\n");
 
 	if(consume('(')){
 		Node *node = expr();
@@ -91,15 +125,19 @@ void gen(Node *node){
 	printf("\tpop\trdi\n");
 	printf("\tpop\trax\n");
 
-	if(kind == ND_ADD){
+	if(kind == ND_ADD){					// +
 		printf("\tadd\trax, rdi\n");
-	}else if(kind == ND_SUB){
+	}else if(kind == ND_SUB){			// -
 		printf("\tsub\trax, rdi\n");
-	}else if(kind == ND_MUL){
+	}else if(kind == ND_MUL){			// *
 		printf("\timul\trax, rdi\n");
-	}else{
+	}else if(kind == ND_DIV){			// /
 		printf("\tcqo\n");
 		printf("\tidiv\trdi\n");
+	}else if(kind == ND_EQU){
+
+	}else if(kind == ND_NEQ){
+
 	}
 
 	printf("\tpush\trax\n");

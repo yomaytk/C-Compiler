@@ -29,9 +29,11 @@ void error_at(char *loc, char *fmt, ...) {
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
-bool consume(char op) {
-	if (token->kind != TK_RESERVED || token->str[0] != op)
-	return false;
+bool consume(char *op) {
+	// if (token->kind != TK_RESERVED || token->str[0] != op)
+	if(token->kind != TK_RESERVED || token->len != strlen(op) || memcmp(token->str, op, token->len)){
+		return false;
+	}
 	token = token->next;
 	return true;
 }
