@@ -166,7 +166,7 @@ void gen(Node *node){
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_LIL){			// >
 		printf("\tcmp\trdi, rax\n");
-		printf("\tsete\tal\n");
+		printf("\tsetl\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_LLE){			// >=
 		printf("\tcmp\trdi, rax\n");
