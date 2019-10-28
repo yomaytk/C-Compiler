@@ -134,10 +134,30 @@ void gen(Node *node){
 	}else if(kind == ND_DIV){			// /
 		printf("\tcqo\n");
 		printf("\tidiv\trdi\n");
-	}else if(kind == ND_EQU){
-
-	}else if(kind == ND_NEQ){
-
+	}else if(kind == ND_EQU){			// ==
+		printf("\tcmp\trax, rdi\n");
+		printf("\tsete\tal\n");
+		printf("\tmovzb\trax, al\n");
+	}else if(kind == ND_NEQ){			// !=
+		printf("\tcmp\trax, rdi\n");
+		printf("\tsetne\tal\n");
+		printf("\tmovzb\trax, al\n");
+	}else if(kind == ND_RIL){			// <
+		printf("\tcmp\trax, rdi\n");
+		printf("\tsetl\tal\n");
+		printf("\tmovzb\trax, al\n");
+	}else if(kind == ND_RLE){			// <=
+		printf("\tcmp\trax, rdi\n");
+		printf("\tsetle\tal\n");
+		printf("\tmovzb\trax, al\n");
+	}else if(kind == ND_LIL){			// >
+		printf("\tcmp\trdi, rax\n");
+		printf("\tsete\tal\n");
+		printf("\tmovzb\trax, al\n");
+	}else if(kind == ND_LLE){			// >=
+		printf("\tcmp\trdi, rax\n");
+		printf("\tsetle\tal\n");
+		printf("\tmovzb\trax, al\n");
 	}
 
 	printf("\tpush\trax\n");
