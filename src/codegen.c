@@ -29,23 +29,23 @@ void gen(Node *node){
 		printf("\tcmp\trax, rdi\n");
 		printf("\tsete\tal\n");
 		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_NEQ){			// !=
+	}else if(kind == ND_NOTEQU){			// !=
 		printf("\tcmp\trax, rdi\n");
 		printf("\tsetne\tal\n");
 		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_RIL){			// <
+	}else if(kind == ND_RIGHTINE){			// <
 		printf("\tcmp\trax, rdi\n");
 		printf("\tsetl\tal\n");
 		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_RLE){			// <=
+	}else if(kind == ND_RINEEQU){			// <=
 		printf("\tcmp\trax, rdi\n");
 		printf("\tsetle\tal\n");
 		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_LIL){			// >
+	}else if(kind == ND_LEFTINE){			// >
 		printf("\tcmp\trdi, rax\n");
 		printf("\tsetl\tal\n");
 		printf("\tmovzb\trax, al\n");
-	}else if(kind == ND_LLE){			// >=
+	}else if(kind == ND_LINEEQU){			// >=
 		printf("\tcmp\trdi, rax\n");
 		printf("\tsetle\tal\n");
 		printf("\tmovzb\trax, al\n");

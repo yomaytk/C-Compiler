@@ -1,12 +1,16 @@
 CFLAGS=-std=c11 -g -static
+SRCS=$(wildcard *.c)
+OBJS=$(SRCS:.c=.o)
 
-msscc: main.c parse.c codegen.c
-	gcc -o msscc main.c parse.c codegen.c
+mss9cc: $(OBJS)
+	$(CC) -o mss9cc $(OBJS) $(LDFLAGS)
 
-test: msscc
+$(OBJS): mss9cc.h
+
+test: mss9cc
 	./test.sh
 
 clean:
-	rm -f msscc *.o *~ tmp*
+	rm -f mss9cc *.o *~ tmp*
 
 .PHONY: test clean

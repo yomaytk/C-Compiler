@@ -17,6 +17,14 @@ bool consume(char *op) {
 	return true;
 }
 
+Token *consume_ident(){
+	
+	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
+		return NULL;
+	}
+	return token;
+}
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
 // それ以外の場合にはエラーを報告する。
 void expect(char op) {
@@ -62,8 +70,13 @@ Token *tokenize(char *p) {
 			continue;
 		}
 
-		if (*p == '+' || *p == '-' || *p == '*' 
-				|| *p == '/' || *p == '(' || *p == ')') {
+		if('a' <= *p && *p <= 'z'){
+			cur = new_token(TK_IDENT, cur, p++, 1);
+			continue;
+		}
+
+		if (*p == '+' || *p == '-' || *p == '*' || *p == '/' 
+			|| *p == '(' || *p == ')' || *p == ';') {
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -76,7 +89,7 @@ Token *tokenize(char *p) {
 			continue;
 		}
 
-		if(*p == '<' || *p == '>'){
+		if(*p == '<' || *p == '>' || *p == '='){
 			cur = new_token(TK_RESERVED, cur, p++, 1);
 			continue;
 		}
@@ -113,8 +126,42 @@ Node *new_node_num(int val){
 	return node;
 }
 
+/*
+	exec parse
+*/
+
+Node *code[100];
+
+void program(){
+	
+	int i = 0;
+	while(!at_eof()){
+		code[i++] = stmt();
+	}
+	code[i] = NULL;
+
+}
+
+Node *stmt(){
+	
+	Node *node = expr();
+	expect(';');
+	return node;
+
+}
+
 Node *expr(){
-	return equarity();
+	return assign();
+}
+
+Node *assign(){
+
+	Node *node = equarity();
+	if(consume("=")){
+		node = new_node(ND_ASSIGN, node, equarity());
+	}
+	return node;
+
 }
 
 Node *equarity(){
@@ -125,7 +172,7 @@ Node *equarity(){
 		if(consume("==")){
 			node = new_node(ND_EQU, node, relational());
 		}else if(consume("!=")){
-			node = new_node(ND_NEQ, node, relational());
+			node = new_node(ND_NOTEQU, node, relational());
 		}else{
 			return node;
 		}
@@ -138,13 +185,13 @@ Node *relational(){
 
 	for(;;){
 		if(consume("<")){
-			node = new_node(ND_RIL, node, add());
+			node = new_node(ND_RIGHTINE, node, add());
 		}else if(consume("<=")){
-			node = new_node(ND_RLE, node, add());
+			node = new_node(ND_RINEEQU, node, add());
 		}else if(consume(">")){
-			node = new_node(ND_LIL, node, add());
+			node = new_node(ND_LEFTINE, node, add());
 		}else if(consume(">=")){
-			node = new_node(ND_LLE, node, add());
+			node = new_node(ND_LINEEQU, node, add());
 		}else{
 			return node;
 		}
@@ -196,6 +243,15 @@ Node *primary(){
 	if(consume("(")){
 		Node *node = expr();
 		expect(')');
+		return node;
+	}
+	printf("%cです！！！！！", token->str[0]);
+	Token *tok = consume_ident();
+	if(tok){
+		printf("ffffff");
+		Node *node = calloc(1, sizeof(Node));
+		node->kind = ND_LVAR;
+		node->offset = (tok->str[0] - 'a' + 1)*8;
 		return node;
 	}
 

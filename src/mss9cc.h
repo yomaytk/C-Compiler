@@ -4,23 +4,27 @@
 // token type
 typedef enum {
 	TK_RESERVED, // signal
+	TK_IDENT,	// identification
 	TK_NUM,      // integer token
 	TK_EOF,      // end token
 } TokenKind;
 
 // signal type
 typedef enum{
-	ND_ADD,		// +
-	ND_SUB,		// -
-	ND_MUL,		// *
-	ND_DIV,		// /
-	ND_NUM,		// digit
-	ND_EQU,		// ==
-	ND_NEQ,		// !=
-	ND_RIL,		// <
-	ND_RLE,		// <=
-	ND_LIL, 	// >
-	ND_LLE,		// >=
+	ND_ADD,			// +
+	ND_SUB,			// -
+	ND_MUL,			// *
+	ND_DIV,			// /
+	ND_NUM,			// digit
+	ND_EQU,			// ==
+	ND_NOTEQU,		// !=
+	ND_RIGHTINE,	// <
+	ND_RINEEQU,		// <=
+	ND_LEFTINE, 	// >
+	ND_LINEEQU,		// >=
+	ND_ASSIGN,		// =
+	ND_LVAR,		// local variable
+	ND_SEMICORO		// ;
 } Nodekind;
 
 typedef struct Token Token;
@@ -41,9 +45,13 @@ struct Node{
 	Node *lhs;
 	Node *rhs;
 	int val;
+	int offset;
 };
 
+void program();
+Node *stmt();
 Node *expr();
+Node *assign();
 Node *equarity();
 Node *relational();
 Node *add();
@@ -51,6 +59,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 bool consume(char *op);
+Token *consume_ident();
 int expect_number();
 void expect(char op);
 int expect_number();
@@ -58,6 +67,8 @@ void gen(Node *node);
 bool at_eof();
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(char *p);
+
+extern Node *code[100];
 
 /* ~~~~~ main.c ~~~~~ */
 

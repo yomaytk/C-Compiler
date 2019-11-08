@@ -37,13 +37,15 @@ int main(int argc, char **argv) {
 
 	user_input = argv[1];
 	token = tokenize(argv[1]);
-	Node *node = expr();
+	program();
 
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n");
 	printf("main:\n");
 
-	gen(node);
+	for(int i = 0;code[i] != NULL;i++){
+		gen(code[i]);
+	}
 
 	printf("\tpop\trax\n");
 	printf("\tret\n");
