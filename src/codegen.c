@@ -8,6 +8,8 @@ void gen(Node *node){
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;
+	}else if(kind == ND_LVAR){
+		
 	}
 
 	gen(node->lhs);

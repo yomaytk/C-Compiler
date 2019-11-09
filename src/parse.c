@@ -22,6 +22,7 @@ Token *consume_ident(){
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
 		return NULL;
 	}
+	token = token->next;
 	return token;
 }
 
@@ -245,7 +246,6 @@ Node *primary(){
 		expect(')');
 		return node;
 	}
-	printf("%cです！！！！！", token->str[0]);
 	Token *tok = consume_ident();
 	if(tok){
 		printf("ffffff");
