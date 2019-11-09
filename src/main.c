@@ -27,6 +27,13 @@ void error_at(char *loc, char *fmt, ...) {
 	exit(1);
 }
 
+void error(char *str){
+
+	fprintf(stderr, "%s\n", str);
+	exit(1);
+
+}
+
 
 int main(int argc, char **argv) {
 
@@ -43,11 +50,17 @@ int main(int argc, char **argv) {
 	printf(".global main\n");
 	printf("main:\n");
 
-	for(int i = 0;code[i] != NULL;i++){
+	printf("\tpush\trbp\n");
+	printf("\tmov\trbp, rsp\n");
+	printf("\tsub\trsp, 208\n");
+
+	for(int i = 0;code[i];i++){
 		gen(code[i]);
+		printf("\tpop\trax\n");
 	}
 
-	printf("\tpop\trax\n");
+	printf("\tmov\trsp, rbp\n");
+	printf("\tpop\trbp\n");
 	printf("\tret\n");
 	return 0;
 }

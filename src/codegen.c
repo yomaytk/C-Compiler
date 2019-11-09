@@ -1,6 +1,17 @@
 #include<stdio.h>
 #include"mss9cc.h"
 
+void gen_lval(Node *node){
+	if(node->kind != ND_LVAR){
+		error("左辺値が変数ではありません.");
+	}
+	
+	// store address of variable to stack
+	printf("\tmov\trax, rbp\n");
+	printf("\tsub\trax, %d\n", node->offset);
+	printf("\tpush\trax\n");
+}
+
 void gen(Node *node){
 
 	Nodekind kind = node->kind;
@@ -9,7 +20,22 @@ void gen(Node *node){
 		printf("\tpush\t%d\n", node->val);
 		return;
 	}else if(kind == ND_LVAR){
+		gen_lval(node);
 		
+		// push number of variable, using address of variable
+		printf("\tpop\trax\n");
+		printf("\tmov\trax, [rax]\n");
+		printf("\tpush\trax\n");
+		return;
+	}else if(kind == ND_ASSIGN){
+		gen_lval(node->lhs);
+		gen(node->rhs);
+
+		printf("\tpop\trdi\n");	// result of lvalue
+		printf("\tpop\trax\n");	// address of rvalue
+		printf("\tmov\t[rax], rdi\n");
+		printf("\tpush\trdi\n");
+		return;
 	}
 
 	gen(node->lhs);

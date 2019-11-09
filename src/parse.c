@@ -22,7 +22,6 @@ Token *consume_ident(){
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
 		return NULL;
 	}
-	token = token->next;
 	return token;
 }
 
@@ -248,10 +247,10 @@ Node *primary(){
 	}
 	Token *tok = consume_ident();
 	if(tok){
-		printf("ffffff");
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_LVAR;
 		node->offset = (tok->str[0] - 'a' + 1)*8;
+		token = token->next;
 		return node;
 	}
 

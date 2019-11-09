@@ -73,6 +73,7 @@ extern Node *code[100];
 /* ~~~~~ main.c ~~~~~ */
 
 void error_at(char *loc, char *fmt, ...);
+void error(char *str);
 
 extern Token *token;
 extern char *user_input;
@@ -80,4 +81,4 @@ extern char *user_input;
 /* ~~~~~ codegen.c ~~~~~ */
 
 void gen(Node *node);
-
+void gen_lval(Node *node);
