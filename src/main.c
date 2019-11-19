@@ -53,7 +53,13 @@ int main(int argc, char **argv) {
 
 	printf("\tpush\trbp\n");
 	printf("\tmov\trbp, rsp\n");
-	printf("\tsub\trsp, 208\n");
+	int vararea = 0; 
+	LVar *lvar = locals_s;
+	while(lvar){
+		vararea += 8;
+		lvar = lvar->next;
+	}
+	printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
 
 	for(int i = 0;code[i];i++){
 		gen(code[i]);

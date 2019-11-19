@@ -31,8 +31,8 @@ void gen(Node *node){
 		gen_lval(node->lhs);
 		gen(node->rhs);
 
-		printf("\tpop\trdi\n");	// result of lvalue
-		printf("\tpop\trax\n");	// address of rvalue
+		printf("\tpop\trdi\n");	// result of rvalue
+		printf("\tpop\trax\n");	// address of lvalue
 		printf("\tmov\t[rax], rdi\n");
 		printf("\tpush\trdi\n");
 		return;

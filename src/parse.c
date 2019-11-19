@@ -208,13 +208,14 @@ Node *primary(){
 			lvar = calloc(1, sizeof(LVar));
 			lvar->len = tok->len;
 			lvar->name = tok->str;
-			node->offset = lvar->offset;
 			if(locals_e != NULL){
 				locals_e->next = lvar;
 				lvar->offset = locals_e->offset + 8;
 			}else{
 				lvar->offset = 8;
+				locals_s = lvar;
 			}
+			node->offset = lvar->offset;
 			locals_e = lvar;
 		}
 		token = token->next;

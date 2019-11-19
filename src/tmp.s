@@ -3,9 +3,9 @@
 main:
 	push	rbp
 	mov	rbp, rsp
-	sub	rsp, 208
+	sub	rsp, 24
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 8
 	push	rax
 	push	10
 	pop	rdi
@@ -14,7 +14,7 @@ main:
 	push	rdi
 	pop	rax
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 16
 	push	rax
 	push	30
 	pop	rdi
@@ -23,7 +23,7 @@ main:
 	push	rdi
 	pop	rax
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 24
 	push	rax
 	push	5
 	pop	rdi
@@ -32,13 +32,13 @@ main:
 	push	rdi
 	pop	rax
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 8
 	push	rax
 	pop	rax
 	mov	rax, [rax]
 	push	rax
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 16
 	push	rax
 	pop	rax
 	mov	rax, [rax]
@@ -48,7 +48,7 @@ main:
 	add	rax, rdi
 	push	rax
 	mov	rax, rbp
-	sub	rax, 0
+	sub	rax, 24
 	push	rax
 	pop	rax
 	mov	rax, [rax]
