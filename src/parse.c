@@ -6,6 +6,9 @@
 #include <string.h>
 #include "mss9cc.h"
 
+LVar *locals_s; // list of variables
+LVar *locals_e;
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
@@ -47,64 +50,13 @@ bool at_eof() {
 	return token->kind == TK_EOF;
 }
 
-// 新しいトークンを作成してcurに繋げる
-Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
-	Token *tok = calloc(1, sizeof(Token));
-	tok->kind = kind;
-	tok->str = str;
-	if(len > 0)	tok->len = len;
-	cur->next = tok;
-	return tok;
-}
-
-// 入力文字列pをトークナイズしてそれを返す
-Token *tokenize(char *p) {
-	Token head;
-	head.next = NULL;
-	Token *cur = &head;
-
-	while (*p) {
-	// 空白文字をスキップ
-		if (isspace(*p)) {
-			p++;
-			continue;
+LVar *find_lvar(Token *tok){
+	for(LVar *lvar = locals_s;lvar;lvar = lvar->next){
+		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
+			return lvar;
 		}
-
-		if('a' <= *p && *p <= 'z'){
-			cur = new_token(TK_IDENT, cur, p++, 1);
-			continue;
-		}
-
-		if (*p == '+' || *p == '-' || *p == '*' || *p == '/' 
-			|| *p == '(' || *p == ')' || *p == ';') {
-			cur = new_token(TK_RESERVED, cur, p++, 1);
-			continue;
-		}
-
-		if(!strncmp(p, "==", 2) || !strncmp(p, "!=", 2) 
-				|| !strncmp(p, ">=", 2) || !strncmp(p, "<=", 2)){
-			cur = new_token(TK_RESERVED, cur, p, 2);
-			p++;
-			p++;
-			continue;
-		}
-
-		if(*p == '<' || *p == '>' || *p == '='){
-			cur = new_token(TK_RESERVED, cur, p++, 1);
-			continue;
-		}
-
-		if (isdigit(*p)) {
-			cur = new_token(TK_NUM, cur, p, -1);
-			cur->val = strtol(p, &p, 10);
-			continue;
-		}
-
-		error_at(p, "トークナイズできません");
 	}
-
-	new_token(TK_EOF, cur, p, -1);
-	return head.next;
+	return NULL;
 }
 
 /*
@@ -249,10 +201,24 @@ Node *primary(){
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_LVAR;
-		node->offset = (tok->str[0] - 'a' + 1)*8;
+		LVar *lvar = find_lvar(tok);
+		if(lvar){
+			node->offset = lvar->offset;
+		}else{
+			lvar = calloc(1, sizeof(LVar));
+			lvar->len = tok->len;
+			lvar->name = tok->str;
+			node->offset = lvar->offset;
+			if(locals_e != NULL){
+				locals_e->next = lvar;
+				lvar->offset = locals_e->offset + 8;
+			}else{
+				lvar->offset = 8;
+			}
+			locals_e = lvar;
+		}
 		token = token->next;
 		return node;
 	}
-
 	return new_node_num(expect_number());
 }

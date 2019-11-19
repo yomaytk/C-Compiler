@@ -8,6 +8,11 @@ int main(){
 	}
 	// a = NULL;
 	printf("%d", a);
-	return a;
 
+	for(int i = 0, j = 0;i < 10;i++, j++){
+		printf("%d\t%d\n", i, j);
+	}
+	printf("return");
+
+	return 0;
 }

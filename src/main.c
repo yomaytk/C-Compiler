@@ -42,10 +42,11 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	// printf("eee\n");
 	user_input = argv[1];
 	token = tokenize(argv[1]);
+	// printf("rrr\n");
 	program();
-
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n");
 	printf("main:\n");

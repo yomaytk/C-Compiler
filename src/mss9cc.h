@@ -1,6 +1,7 @@
 #define bool _Bool
 
-/* ~~~~~ parse.c ~~~~~ */
+/* ~~~~~ tokenize.c ~~~~~ */
+
 // token type
 typedef enum {
 	TK_RESERVED, // signal
@@ -8,6 +9,34 @@ typedef enum {
 	TK_NUM,      // integer token
 	TK_EOF,      // end token
 } TokenKind;
+
+typedef struct Token Token;
+
+// token type
+struct Token {
+	TokenKind kind; // トークンの型
+	Token *next;    // 次の入力トークン
+	int val;        // kindがTK_NUMの場合、その数値
+	char *str;      // トークン文字列
+	int len;
+};
+
+Token *new_token(TokenKind kind, Token *cur, char *str, int len);
+Token *tokenize(char *p);
+
+typedef struct LVar LVar;
+
+struct LVar {
+	LVar *next;
+	char *name;
+	int len;
+	int offset;
+};
+
+extern LVar *locals_s;
+extern LVar *locals_e;
+
+/* ~~~~~ parse.c ~~~~~ */
 
 // signal type
 typedef enum{
@@ -26,17 +55,6 @@ typedef enum{
 	ND_LVAR,		// local variable
 	ND_SEMICORO		// ;
 } Nodekind;
-
-typedef struct Token Token;
-
-// token type
-struct Token {
-	TokenKind kind; // トークンの型
-	Token *next;    // 次の入力トークン
-	int val;        // kindがTK_NUMの場合、その数値
-	char *str;      // トークン文字列
-	int len;
-};
 
 typedef struct Node Node;
 
@@ -65,10 +83,10 @@ void expect(char op);
 int expect_number();
 void gen(Node *node);
 bool at_eof();
-Token *new_token(TokenKind kind, Token *cur, char *str, int len);
-Token *tokenize(char *p);
 
 extern Node *code[100];
+
+LVar *find_lvar(Token *tok);
 
 /* ~~~~~ main.c ~~~~~ */
 
