@@ -65,7 +65,6 @@ int main(int argc, char **argv) {
 		gen(code[i]);
 		printf("\tpop\trax\n");
 	}
-
 	printf("\tmov\trsp, rbp\n");
 	printf("\tpop\trbp\n");
 	printf("\tret\n");

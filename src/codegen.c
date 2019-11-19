@@ -16,6 +16,15 @@ void gen(Node *node){
 
 	Nodekind kind = node->kind;
 
+	if(kind == ND_RETURN){
+		gen(node->lhs);
+		printf("\tpop\trax\n");
+		printf("\tmov\trsp, rbp\n");
+		printf("\tpop\trbp\n");
+		printf("ret\n");
+		return;
+	}
+
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;

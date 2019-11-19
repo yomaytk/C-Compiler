@@ -13,7 +13,7 @@ LVar *locals_e;
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
 	// if (token->kind != TK_RESERVED || token->str[0] != op)
-	if(token->kind != TK_RESERVED || token->len != strlen(op) || memcmp(token->str, op, token->len)){
+	if(token->len != strlen(op) || memcmp(token->str, op, token->len)){
 		return false;
 	}
 	token = token->next;
@@ -95,8 +95,16 @@ void program(){
 }
 
 Node *stmt(){
+
+	Node *node;
 	
-	Node *node = expr();
+	if(consume("return")){
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_RETURN;
+		node->lhs = expr();
+	}else{
+		node = expr();
+	}
 	expect(';');
 	return node;
 

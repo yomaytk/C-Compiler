@@ -7,6 +7,7 @@ typedef enum {
 	TK_RESERVED, // signal
 	TK_IDENT,	// identification
 	TK_NUM,      // integer token
+	TK_RETURN,	// return token
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -36,6 +37,8 @@ struct LVar {
 extern LVar *locals_s;
 extern LVar *locals_e;
 
+int is_alnum(char c);
+
 /* ~~~~~ parse.c ~~~~~ */
 
 // signal type
@@ -53,7 +56,8 @@ typedef enum{
 	ND_LINEEQU,		// >=
 	ND_ASSIGN,		// =
 	ND_LVAR,		// local variable
-	ND_SEMICORO		// ;
+	ND_SEMICORO,	// ;
+	ND_RETURN,		// return
 } Nodekind;
 
 typedef struct Node Node;
