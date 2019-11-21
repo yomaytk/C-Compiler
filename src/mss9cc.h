@@ -10,6 +10,7 @@ typedef enum {
 	TK_RETURN,	// return token
 	TK_IF,
 	TK_ELSE,	
+	TK_WHILE,
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -61,6 +62,7 @@ typedef enum{
 	ND_SEMICORO,	// ;
 	ND_RETURN,		// return
 	ND_IF,			// if
+	ND_WHILE,
 	ND_ELSE,		// else
 } Nodekind;
 

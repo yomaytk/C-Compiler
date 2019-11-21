@@ -105,9 +105,9 @@ Node *stmt(){
 	}else if(consume("if")){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_IF;
-		// expect("(");
+		expect('(');
 		node->lhs = expr();
-		// expect(")");
+		expect(')');
 		Node *node2 = stmt();
 		if(consume("else")){
 			Node *node3 = calloc(1, sizeof(Node));
@@ -118,6 +118,14 @@ Node *stmt(){
 		}else{
 			node->rhs = node2;
 		}
+		return node;
+	}else if(consume("while")){
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_WHILE;
+		expect('(');
+		node->lhs = expr();
+		expect(')');
+		node->rhs = stmt();
 		return node;
 	}else{
 		node = expr();

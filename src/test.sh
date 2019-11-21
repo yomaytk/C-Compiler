@@ -50,5 +50,7 @@ try 10 "if (0) 1; else 10;"
 try 5 "if (1) 5; else 10;"
 try 20 "a = 10; b = 10; if (a == b) 20; else 3;"
 try 3 "a = 10; b = 11; if (a == b) 20; else 3;"
+try 15 "iff = 10; elsee = 5; return iff+elsee;"
+try 10 "if (1) 20; return 10;"
 
 echo -e "\e[32mOK\e[m"

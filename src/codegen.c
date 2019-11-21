@@ -29,16 +29,16 @@ void gen(Node *node){
 		gen(node->lhs);
 		printf("\tpop\trax\n");
 		printf("\tcmp\trax, 0\n");
-		printf("\tje\t.Lend1\n");
+		printf("\tje\t.Lelse\n");
 		if(node->rhs->kind == ND_ELSE){
 			gen(node->rhs->lhs);
-			printf("\tjmp\t.Lend2\n");
-			printf(".Lend1:\n");
+			printf("\tjmp\t.Lend\n");
+			printf(".Lelse:\n");
 			gen(node->rhs->rhs);
-			printf(".Lend2:\n");
+			printf(".Lend:\n");
 		}else{
 			gen(node->rhs);
-			printf(".Lend1:\n");
+			printf(".Lelse:\n");
 		}
 		return;
 	}
