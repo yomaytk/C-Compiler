@@ -3,50 +3,70 @@
 main:
 	push	rbp
 	mov	rbp, rsp
-	sub	rsp, 8
+	sub	rsp, 16
 	mov	rax, rbp
 	sub	rax, 8
 	push	rax
-	push	5
+	push	0
 	pop	rdi
 	pop	rax
 	mov	[rax], rdi
 	push	rdi
 	pop	rax
+	mov	rax, rbp
+	sub	rax, 16
+	push	rax
+	push	0
+	pop	rdi
+	pop	rax
+	mov	[rax], rdi
+	push	rdi
 .Lfor_begin:
 	mov	rax, rbp
-	sub	rax, 8
+	sub	rax, 16
 	push	rax
 	pop	rax
 	mov	rax, [rax]
 	push	rax
-	push	13
+	push	10
 	pop	rdi
 	pop	rax
-	cmp	rdi, rax
-	setl	al
+	cmp	rax, rdi
+	setle	al
 	movzb	rax, al
 	push	rax
 	pop	rax
 	cmp	rax, 0
-	je	.Lelse
+	je	.Lfor_end
+	mov	rax, rbp
+	sub	rax, 8
+	push	rax
 	mov	rax, rbp
 	sub	rax, 8
 	push	rax
 	pop	rax
 	mov	rax, [rax]
 	push	rax
-	pop	rax
-	mov	rsp, rbp
-	pop	rbp
-	ret
-	jmp	.Lend
-.Lelse:
 	mov	rax, rbp
-	sub	rax, 8
+	sub	rax, 16
+	push	rax
+	pop	rax
+	mov	rax, [rax]
+	push	rax
+	pop	rdi
+	pop	rax
+	add	rax, rdi
+	push	rax
+	pop	rdi
+	pop	rax
+	mov	[rax], rdi
+	push	rdi
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 16
 	push	rax
 	mov	rax, rbp
-	sub	rax, 8
+	sub	rax, 16
 	push	rax
 	pop	rax
 	mov	rax, [rax]
@@ -60,9 +80,19 @@ main:
 	pop	rax
 	mov	[rax], rdi
 	push	rdi
-.Lend:
 	jmp	.Lfor_begin
 .Lfor_end:
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 8
+	push	rax
+	pop	rax
+	mov	rax, [rax]
+	push	rax
+	pop	rax
+	mov	rsp, rbp
+	pop	rbp
+	ret
 	pop	rax
 	mov	rsp, rbp
 	pop	rbp

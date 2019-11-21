@@ -149,6 +149,8 @@ Node *stmt(){
 		node->rhs = stmt();
 		return node;
 	}else if(consume("{")){
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_BLOCK;
 		Node *vec = node;
 		while(!consume("}")){
 			vec->vector = stmt();

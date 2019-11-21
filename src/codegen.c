@@ -95,6 +95,14 @@ void gen(Node *node){
 		printf("\tmov\t[rax], rdi\n");
 		printf("\tpush\trdi\n");
 		return;
+	}else if(kind == ND_BLOCK){
+		Node *vec = node->vector;
+		while(vec){
+			gen(vec);
+			printf("\tpop\trax\n");
+			vec = vec->vector;
+		}
+		return;
 	}
 
 	gen(node->lhs);
