@@ -54,5 +54,8 @@ try 15 "iff = 10; elsee = 5; return iff+elsee;"
 try 10 "if (1) 20; return 10;"
 try 3 "a = 10; while(a-3) a = a-1; return a;"
 try 10 "a = 10; b = 20; while(0) a = a-1; return a;"
+try 15 "for(a = 4; a < 15; a = a+1) a = a; return a;"
+try 25 "a = 10; for(; a < 25;a = a+1) a = a; return a;"
+try 14 "a = 5; for(;;) if(a > 13) return a; else a = a+1;"
 
 echo -e "\e[32mOK\e[m"

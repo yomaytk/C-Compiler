@@ -55,6 +55,26 @@ void gen(Node *node){
 		return;
 	}
 
+	if(kind == ND_FOR){
+		if(node->lhs->lhs){
+			gen(node->lhs->lhs);
+		}
+		printf(".Lfor_begin:\n");
+		if(node->lhs->mhs){
+			gen(node->lhs->mhs);
+			printf("\tpop\trax\n");
+			printf("\tcmp\trax, 0\n");
+			printf("\tje\t.Lfor_end\n");
+		}
+		gen(node->rhs);
+		if(node->lhs->rhs){
+			gen(node->lhs->rhs);
+		}
+		printf("\tjmp\t.Lfor_begin\n");
+		printf(".Lfor_end:\n");
+		return;
+	}
+
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;

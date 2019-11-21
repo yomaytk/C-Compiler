@@ -141,7 +141,7 @@ Node *stmt(){
 			node_cond->mhs = expr();
 			expect(';');
 		}
-		if(!consume(')')){
+		if(!consume(")")){
 			node_cond->rhs = expr();
 			expect(')');
 		}
