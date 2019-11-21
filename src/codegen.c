@@ -25,6 +25,24 @@ void gen(Node *node){
 		return;
 	}
 
+	if(kind == ND_IF){
+		gen(node->lhs);
+		printf("\tpop\trax\n");
+		printf("\tcmp\trax, 0\n");
+		printf("\tje\t.Lend1\n");
+		if(node->rhs->kind == ND_ELSE){
+			gen(node->rhs->lhs);
+			printf("\tjmp\t.Lend2\n");
+			printf(".Lend1:\n");
+			gen(node->rhs->rhs);
+			printf(".Lend2:\n");
+		}else{
+			gen(node->rhs);
+			printf(".Lend1:\n");
+		}
+		return;
+	}
+
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;
