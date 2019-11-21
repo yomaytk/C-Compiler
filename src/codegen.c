@@ -43,6 +43,18 @@ void gen(Node *node){
 		return;
 	}
 
+	if(kind == ND_WHILE){
+		printf(".Lwhile_begin:\n");
+		gen(node->lhs);
+		printf("\tpop\trax\n");
+		printf("\tcmp\trax, 0\n");
+		printf("\tje\t.Lwhile_end\n");
+		gen(node->rhs);
+		printf("\tjmp\t.Lwhile_begin\n");
+		printf(".Lwhile_end:\n");
+		return;
+	}
+
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;

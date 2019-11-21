@@ -52,5 +52,7 @@ try 20 "a = 10; b = 10; if (a == b) 20; else 3;"
 try 3 "a = 10; b = 11; if (a == b) 20; else 3;"
 try 15 "iff = 10; elsee = 5; return iff+elsee;"
 try 10 "if (1) 20; return 10;"
+try 3 "a = 10; while(a-3) a = a-1; return a;"
+try 10 "a = 10; b = 20; while(0) a = a-1; return a;"
 
 echo -e "\e[32mOK\e[m"
