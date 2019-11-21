@@ -8,6 +8,8 @@ typedef enum {
 	TK_IDENT,	// identification
 	TK_NUM,      // integer token
 	TK_RETURN,	// return token
+	TK_IF,
+	TK_ELSE,	
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -58,6 +60,8 @@ typedef enum{
 	ND_LVAR,		// local variable
 	ND_SEMICORO,	// ;
 	ND_RETURN,		// return
+	ND_IF,			// if
+	ND_ELSE,		// else
 } Nodekind;
 
 typedef struct Node Node;

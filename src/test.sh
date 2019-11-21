@@ -44,6 +44,6 @@ try 14 "a = 10; b = 4; a+b;"
 try 35 "a = 10; b = 30; c = 5; a+b-c;"
 try 5 "return 5;"
 try 10 "return a = 4+6;"
-try 10 "a = 5; b = 4; c = 10; return a-a+b-b+c; 100;"
+try 19 "a = 5; b = 4; c = 10; d = 100; return a+b+c; 100;"
 
 echo -e "\e[32mOK\e[m"

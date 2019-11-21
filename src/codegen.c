@@ -21,7 +21,7 @@ void gen(Node *node){
 		printf("\tpop\trax\n");
 		printf("\tmov\trsp, rbp\n");
 		printf("\tpop\trbp\n");
-		printf("ret\n");
+		printf("\tret\n");
 		return;
 	}
 

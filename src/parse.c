@@ -102,6 +102,22 @@ Node *stmt(){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_RETURN;
 		node->lhs = expr();
+	}else if(consume("if")){
+		node = calloc(1, sizeof(Node));
+		node->kind = ND_IF;
+		expect("(");
+		node->lhs = expr();
+		expect(")");
+		Node *node2 = stmt();
+		if(consume("else")){
+			Node *node3 = calloc(1, sizeof(Node));
+			node3->kind = ND_ELSE;
+			node3->lhs = node2;
+			node3->rhs = stmt();
+			node->rhs = node3;
+		}else{
+			node->rhs = node2;
+		}
 	}else{
 		node = expr();
 	}
