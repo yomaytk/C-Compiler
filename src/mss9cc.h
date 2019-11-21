@@ -67,6 +67,7 @@ typedef enum{
 	ND_WHILE,
 	ND_FOR,
 	ND_FOREXPR,		// condition of for
+	ND_BLOCK,
 } Nodekind;
 
 typedef struct Node Node;
@@ -76,6 +77,7 @@ struct Node{
 	Node *lhs;
 	Node *mhs;
 	Node *rhs;
+	Node *vector;
 	int val;
 	int offset;
 };

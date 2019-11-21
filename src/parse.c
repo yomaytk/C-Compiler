@@ -148,7 +148,15 @@ Node *stmt(){
 		node->lhs = node_cond;
 		node->rhs = stmt();
 		return node;
-	}else{
+	}else if(consume("{")){
+		Node *vec = node;
+		while(!consume("}")){
+			vec->vector = stmt();
+			vec = vec->vector;
+		}
+		return node;
+	}
+	else{
 		node = expr();
 	}
 	expect(';');
