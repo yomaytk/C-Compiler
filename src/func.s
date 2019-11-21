@@ -4,7 +4,12 @@ main:
 	push	rbp
 	mov	rbp, rsp
 	sub	rsp, 8
-	call	foo
+	mov	rax, rbp
+	sub	rax, 8
+	push	rax
+	pop	rax
+	mov	rax, [rax]
+	push	rax
 	pop	rax
 	mov	rsp, rbp
 	pop	rbp

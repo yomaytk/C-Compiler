@@ -264,7 +264,16 @@ Node *primary(){
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
-		node->kind = ND_LVAR;
+		Token *token2 = token;
+		token = token->next;
+		if(consume("(")){
+			expect(')');
+			node->kind = ND_APP;
+			strncpy(node->token, token2->str, token2->len);
+			*(node->token+token2->len) = '\0';
+		}else{
+			node->kind = ND_LVAR;
+		}
 		LVar *lvar = find_lvar(tok);
 		if(lvar){
 			node->offset = lvar->offset;
@@ -282,7 +291,6 @@ Node *primary(){
 			node->offset = lvar->offset;
 			locals_e = lvar;
 		}
-		token = token->next;
 		return node;
 	}
 	return new_node_num(expect_number());

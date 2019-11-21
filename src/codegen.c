@@ -16,6 +16,36 @@ void gen(Node *node){
 
 	Nodekind kind = node->kind;
 
+	if(kind == ND_NUM){
+		printf("\tpush\t%d\n", node->val);
+		return;
+	}else if(kind == ND_LVAR){
+		gen_lval(node);
+		
+		// push number of variable, using address of variable
+		printf("\tpop\trax\n");
+		printf("\tmov\trax, [rax]\n");
+		printf("\tpush\trax\n");
+		return;
+	}else if(kind == ND_ASSIGN){
+		gen_lval(node->lhs);
+		gen(node->rhs);
+
+		printf("\tpop\trdi\n");	// result of rvalue
+		printf("\tpop\trax\n");	// address of lvalue
+		printf("\tmov\t[rax], rdi\n");
+		printf("\tpush\trdi\n");
+		return;
+	}else if(kind == ND_BLOCK){
+		Node *vec = node->vector;
+		while(vec){
+			gen(vec);
+			printf("\tpop\trax\n");
+			vec = vec->vector;
+		}
+		return;
+	}
+
 	if(kind == ND_RETURN){
 		gen(node->lhs);
 		printf("\tpop\trax\n");
@@ -75,33 +105,8 @@ void gen(Node *node){
 		return;
 	}
 
-	if(kind == ND_NUM){
-		printf("\tpush\t%d\n", node->val);
-		return;
-	}else if(kind == ND_LVAR){
-		gen_lval(node);
-		
-		// push number of variable, using address of variable
-		printf("\tpop\trax\n");
-		printf("\tmov\trax, [rax]\n");
-		printf("\tpush\trax\n");
-		return;
-	}else if(kind == ND_ASSIGN){
-		gen_lval(node->lhs);
-		gen(node->rhs);
-
-		printf("\tpop\trdi\n");	// result of rvalue
-		printf("\tpop\trax\n");	// address of lvalue
-		printf("\tmov\t[rax], rdi\n");
-		printf("\tpush\trdi\n");
-		return;
-	}else if(kind == ND_BLOCK){
-		Node *vec = node->vector;
-		while(vec){
-			gen(vec);
-			printf("\tpop\trax\n");
-			vec = vec->vector;
-		}
+	if(kind == ND_APP){
+		printf("\tcall\t%s\n", node->token);
 		return;
 	}
 

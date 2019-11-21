@@ -68,6 +68,7 @@ typedef enum{
 	ND_FOR,
 	ND_FOREXPR,		// condition of for
 	ND_BLOCK,
+	ND_APP,
 } Nodekind;
 
 typedef struct Node Node;
@@ -80,6 +81,7 @@ struct Node{
 	Node *vector;
 	int val;
 	int offset;
+	char token[100];
 };
 
 void program();
