@@ -127,6 +127,27 @@ Node *stmt(){
 		expect(')');
 		node->rhs = stmt();
 		return node;
+	}else if(consume("for")){
+		node = calloc(1, sizeof(Node));
+		Node *node_cond = calloc(1, sizeof(Node));
+		node_cond->kind = ND_FOREXPR;
+		node->kind = ND_FOR;
+		expect('(');
+		if(!consume(";")){
+			node_cond->lhs = expr();
+			expect(';');
+		}
+		if(!consume(";")){
+			node_cond->mhs = expr();
+			expect(';');
+		}
+		if(!consume(')')){
+			node_cond->rhs = expr();
+			expect(')');
+		}
+		node->lhs = node_cond;
+		node->rhs = stmt();
+		return node;
 	}else{
 		node = expr();
 	}

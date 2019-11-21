@@ -11,6 +11,7 @@ typedef enum {
 	TK_IF,
 	TK_ELSE,	
 	TK_WHILE,
+	TK_FOR,
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -62,8 +63,10 @@ typedef enum{
 	ND_SEMICORO,	// ;
 	ND_RETURN,		// return
 	ND_IF,			// if
-	ND_WHILE,
 	ND_ELSE,		// else
+	ND_WHILE,
+	ND_FOR,
+	ND_FOREXPR,		// condition of for
 } Nodekind;
 
 typedef struct Node Node;
@@ -71,6 +74,7 @@ typedef struct Node Node;
 struct Node{
 	Nodekind kind;
 	Node *lhs;
+	Node *mhs;
 	Node *rhs;
 	int val;
 	int offset;
