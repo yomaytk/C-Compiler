@@ -324,12 +324,14 @@ Node *primary(){
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
 			Node *vec = node;
-			while(1){
-				vec->vector = expr();
-				vec = vec->vector;
-				if(!consume(",")){
-					expect(')');
-					break;
+			if(!consume(")")){
+				while(1){
+					vec->vector = expr();
+					vec = vec->vector;
+					if(!consume(",")){
+						expect(')');
+						break;
+					}
 				}
 			}
 		}else{
