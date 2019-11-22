@@ -59,29 +59,29 @@ void gen(Node *node){
 		gen(node->lhs);
 		printf("\tpop\trax\n");
 		printf("\tcmp\trax, 0\n");
-		printf("\tje\t.Lelse\n");
+		printf("\tje\t.Lelse%d\n", node->labelcnt[0] = ++label_cnt);
 		if(node->rhs->kind == ND_ELSE){
 			gen(node->rhs->lhs);
-			printf("\tjmp\t.Lend\n");
-			printf(".Lelse:\n");
+			printf("\tjmp\t.Lend%d\n", node->labelcnt[1] = ++label_cnt);
+			printf(".Lelse%d:\n", node->labelcnt[0]);
 			gen(node->rhs->rhs);
-			printf(".Lend:\n");
+			printf(".Lend%d:\n", node->labelcnt[1]);
 		}else{
 			gen(node->rhs);
-			printf(".Lelse:\n");
+			printf(".Lelse%d:\n", node->labelcnt[0]);
 		}
 		return;
 	}
 
 	if(kind == ND_WHILE){
-		printf(".Lwhile_begin:\n");
+		printf(".Lwhile_begin%d:\n", node->labelcnt[0] = ++label_cnt);
 		gen(node->lhs);
 		printf("\tpop\trax\n");
 		printf("\tcmp\trax, 0\n");
-		printf("\tje\t.Lwhile_end\n");
+		printf("\tje\t.Lwhile_end%d\n", node->labelcnt[1] = ++label_cnt);
 		gen(node->rhs);
-		printf("\tjmp\t.Lwhile_begin\n");
-		printf(".Lwhile_end:\n");
+		printf("\tjmp\t.Lwhile_begin%d\n", node->labelcnt[0]);
+		printf(".Lwhile_end%d:\n", node->labelcnt[1]);
 		return;
 	}
 
@@ -89,23 +89,30 @@ void gen(Node *node){
 		if(node->lhs->lhs){
 			gen(node->lhs->lhs);
 		}
-		printf(".Lfor_begin:\n");
+		printf(".Lfor_begin%d:\n", node->labelcnt[0] = ++label_cnt);
 		if(node->lhs->mhs){
 			gen(node->lhs->mhs);
 			printf("\tpop\trax\n");
 			printf("\tcmp\trax, 0\n");
-			printf("\tje\t.Lfor_end\n");
+			printf("\tje\t.Lfor_end%d\n", node->labelcnt[1] = ++label_cnt);
 		}
 		gen(node->rhs);
 		if(node->lhs->rhs){
 			gen(node->lhs->rhs);
 		}
-		printf("\tjmp\t.Lfor_begin\n");
-		printf(".Lfor_end:\n");
+		printf("\tjmp\t.Lfor_begin%d\n", node->labelcnt[0]);
+		printf(".Lfor_end%d:\n", node->labelcnt[1]);
 		return;
 	}
 
 	if(kind == ND_APP){
+		Node *vec = node->vector;
+		while(vec){
+			gen(vec);
+			vec = vec->vector;
+		}
+		vec = node->vector;
+
 		printf("\tcall\t%s\n", node->token);
 		return;
 	}

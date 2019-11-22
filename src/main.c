@@ -13,6 +13,10 @@ Token *token;
 // input program
 char *user_input;
 
+// label number for uniqueness
+int label_cnt = 0;
+
+
 // notice price of error
 void error_at(char *loc, char *fmt, ...) {
 	va_list ap;
@@ -42,15 +46,18 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
-	// printf("eee\n");
 	user_input = argv[1];
 	token = tokenize(argv[1]);
-	// printf("rrr\n");
+
+
 	program();
 	printf(".intel_syntax noprefix\n");
-	printf(".global main\n");
-	printf("main:\n");
+	printf(".global main\n\n");
 
+	printf("rsp_to_16n:\n");
+	printf("\tpush\t0xffff\n");
+	
+	printf("main:\n");
 	printf("\tpush\trbp\n");
 	printf("\tmov\trbp, rsp\n");
 	int vararea = 0; 

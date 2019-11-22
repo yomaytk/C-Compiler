@@ -82,6 +82,7 @@ struct Node{
 	int val;
 	int offset;
 	char token[100];
+	int labelcnt[10];
 };
 
 void program();
@@ -118,3 +119,5 @@ extern char *user_input;
 
 void gen(Node *node);
 void gen_lval(Node *node);
+
+extern int label_cnt;

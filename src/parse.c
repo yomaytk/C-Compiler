@@ -267,10 +267,18 @@ Node *primary(){
 		Token *token2 = token;
 		token = token->next;
 		if(consume("(")){
-			expect(')');
 			node->kind = ND_APP;
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
+			Node *vec = node->vector;
+			while(1){
+				vec = primary();
+				vec = vec->vector;
+				if(!consume(",")){
+					expect(')');
+					break;
+				}
+			}
 		}else{
 			node->kind = ND_LVAR;
 		}

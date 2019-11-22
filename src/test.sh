@@ -60,5 +60,6 @@ try 14 "a = 5; for(;;) if(a > 13) return a; else a = a+1;"
 try 60 "{ a = 10; b = 20; c = 30; return a+b+c; } return 100;"
 try 33 "a = 10; if (a == 10) { b = 20; c = 3; a = a+b+c; return a;}"
 try 55 "sum = 0; for(cnt = 0; cnt <= 10; cnt = cnt+1){ sum = sum + cnt; } return sum;"
+try 12 "a = 0; if (1 == 2) return 2; else a = 5; if (1 == 3) return 6; else a = a+7; if (2 == 5) return 129; else return a;"
 
-echo -e "\e[32mOK\e[m"
+echo -e "\e[32mSUCCESS\e[m"
