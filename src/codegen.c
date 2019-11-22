@@ -115,12 +115,12 @@ void gen(Node *node){
 		}
 		vec = node->vector;
 		rsp_16n(node);
-		if(paramscnt == 6){ printf("\tpop\tr9\n"); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 5){ printf("\tpop\tr8\n"); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 4){ printf("\tpop\trcx\n"); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 3){ printf("\tpop\trdx\n"); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 2){ printf("\tpop\trsi\n"); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 1){ printf("\tpop\trdi\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 6){ printf("\tpop\tr9\n"); paramscnt--;}
+		if(paramscnt == 5){ printf("\tpop\tr8\n"); paramscnt--;}
+		if(paramscnt == 4){ printf("\tpop\trcx\n"); paramscnt--;}
+		if(paramscnt == 3){ printf("\tpop\trdx\n"); paramscnt--;}
+		if(paramscnt == 2){ printf("\tpop\trsi\n"); paramscnt--;}
+		if(paramscnt == 1){ printf("\tpop\trdi\n"); paramscnt--;}
 		printf("\tcall\t%s\n", node->token);
 		return;
 	}
