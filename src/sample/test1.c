@@ -1,10 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-int addfun(int a, int b, int c, int d){
-	return 0xffff;
+int hogehoge(int a, int b){
+	return a+b;
 }
 
 int main(){
-	return addfun(234, 342, 1221, 243);
+	return hogehoge(3, 4);
 }

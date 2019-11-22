@@ -272,7 +272,7 @@ Node *primary(){
 			*(node->token+token2->len) = '\0';
 			Node *vec = node->vector;
 			while(1){
-				vec = primary();
+				vec = expr();
 				vec = vec->vector;
 				if(!consume(",")){
 					expect(')');

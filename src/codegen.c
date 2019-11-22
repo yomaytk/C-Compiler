@@ -114,7 +114,7 @@ void gen(Node *node){
 			paramscnt++;
 		}
 		vec = node->vector;
-		rsp_16n(node);
+		// rsp_16n(node);
 		if(paramscnt == 6){ printf("\tmov\tr9d, %d", vec->offset); vec = vec->vector; paramscnt--;}
 		if(paramscnt == 5){ printf("\tmov\tr8d, %d", vec->offset); vec = vec->vector; paramscnt--;}
 		if(paramscnt == 4){ printf("\tmov\tecx, %d", vec->offset); vec = vec->vector; paramscnt--;}
