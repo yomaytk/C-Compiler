@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
 	
 	// for(int i = 0;code[i];i++){
 	// 	printf("code[%d]:\n", i);
-	// 	syntax_debug(code[i]);
+	// 	printf("%s\n", syntax_debug(code[i]));
 	// }
 
 	return 0;

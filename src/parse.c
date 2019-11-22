@@ -107,7 +107,7 @@ char* nodekind2str(Nodekind kind){
 char *syntax_debug(Node *code){
 	
 	char *str[4];
-	char stra = calloc(1, sizeof(char*));
+	char *stra = calloc(1, sizeof(char*));
 	Nodekind kind = code->kind;
 
 	for(int i = 0;i < 4;i++)	str[i] = "NULL";
@@ -115,7 +115,7 @@ char *syntax_debug(Node *code){
 	if(code->mhs)	str[1] = syntax_debug(code->mhs);
 	if(code->lhs)	str[2] = syntax_debug(code->lhs);
 	if(code->vector){
-		str[3] = "";
+		str[3] = "(";
 		while(1){
 			code = code->vector;
 			str[3] = strcat(str[3], syntax_debug(code));
@@ -323,9 +323,9 @@ Node *primary(){
 			node->kind = ND_APP;
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
-			Node *vec = node->vector;
+			Node *vec = node;
 			while(1){
-				vec = expr();
+				vec->vector = expr();
 				vec = vec->vector;
 				if(!consume(",")){
 					expect(')');

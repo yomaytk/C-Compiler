@@ -106,21 +106,21 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_APP){
-		Node *vec = node->vector;
+		Node *vec = node;
 		int paramscnt = 0;
-		while(vec){
-			gen(vec);
+		while(vec->vector){
+			gen(vec->vector);
 			vec = vec->vector;
 			paramscnt++;
 		}
 		vec = node->vector;
 		// rsp_16n(node);
-		if(paramscnt == 6){ printf("\tmov\tr9d, %d", vec->offset); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 5){ printf("\tmov\tr8d, %d", vec->offset); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 4){ printf("\tmov\tecx, %d", vec->offset); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 3){ printf("\tmov\tedx, %d", vec->offset); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 2){ printf("\tmov\tesi, %d", vec->offset); vec = vec->vector; paramscnt--;}
-		if(paramscnt == 1){ printf("\tmov\tedi, %d", vec->offset); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 6){ printf("\tpop\tr9\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 5){ printf("\tpop\tr8\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 4){ printf("\tpop\trcx\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 3){ printf("\tpop\trdx\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 2){ printf("\tpop\trsi\n"); vec = vec->vector; paramscnt--;}
+		if(paramscnt == 1){ printf("\tpop\trdi\n"); vec = vec->vector; paramscnt--;}
 		printf("\tcall\t%s\n", node->token);
 		return;
 	}
