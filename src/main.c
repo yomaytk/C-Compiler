@@ -38,6 +38,17 @@ void error(char *str){
 
 }
 
+void tokenize_debug(Token *tok){
+	while(tok){
+		char s[100];
+		strncpy(s, tok->str, tok->len);
+		s[tok->len] = '\0';
+		printf("%s\n", s);
+		tok = tok->next;
+	}
+	return;
+}
+
 
 int main(int argc, char **argv) {
 
@@ -48,7 +59,8 @@ int main(int argc, char **argv) {
 
 	user_input = argv[1];
 	token = tokenize(argv[1]);
-
+	// debug of lexer
+	// { tokenize_debug(token); return 0; }
 
 	program();
 	printf(".intel_syntax noprefix\n");
