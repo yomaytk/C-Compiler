@@ -42,6 +42,7 @@ extern LVar *locals_s;
 extern LVar *locals_e;
 
 int is_alnum(char c);
+void tokenize_debug(Token *tok);
 
 /* ~~~~~ parse.c ~~~~~ */
 
@@ -106,6 +107,7 @@ bool at_eof();
 extern Node *code[100];
 
 LVar *find_lvar(Token *tok);
+char* syntax_debug(Node *code);
 
 /* ~~~~~ main.c ~~~~~ */
 

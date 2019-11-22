@@ -23,6 +23,17 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 	return tok;
 }
 
+void tokenize_debug(Token *tok){
+	while(tok){
+		char s[100];
+		strncpy(s, tok->str, tok->len);
+		s[tok->len] = '\0';
+		printf("%s\n", s);
+		tok = tok->next;
+	}
+	return;
+}
+
 // 入力文字列pをトークナイズしてそれを返す
 Token *tokenize(char *p) {
 	Token head;

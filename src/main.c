@@ -38,18 +38,6 @@ void error(char *str){
 
 }
 
-void tokenize_debug(Token *tok){
-	while(tok){
-		char s[100];
-		strncpy(s, tok->str, tok->len);
-		s[tok->len] = '\0';
-		printf("%s\n", s);
-		tok = tok->next;
-	}
-	return;
-}
-
-
 int main(int argc, char **argv) {
 
 	if (argc != 2) {
@@ -81,8 +69,15 @@ int main(int argc, char **argv) {
 		gen(code[i]);
 		printf("\tpop\trax\n");
 	}
+
 	printf("\tmov\trsp, rbp\n");
 	printf("\tpop\trbp\n");
 	printf("\tret\n");
+	
+	// for(int i = 0;code[i];i++){
+	// 	printf("code[%d]:\n", i);
+	// 	syntax_debug(code[i]);
+	// }
+
 	return 0;
 }

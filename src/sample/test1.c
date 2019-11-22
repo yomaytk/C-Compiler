@@ -1,10 +1,17 @@
 #include <stdio.h>
+#include <string.h>
+
 
 // int hogehoge(int a, int b){
 // 	return a+b;
 // }
 
+
 int main(){
-	int a = 1, b = 3;
-	return a+b;
+	char *ss = calloc(1, sizeof(char*));
+	*ss = 'a';
+	*(ss+1) = 'b';
+	// ss = foobar();
+	printf("%s", ss);
+    return 0;
 }

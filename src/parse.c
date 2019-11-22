@@ -78,6 +78,59 @@ Node *new_node_num(int val){
 	return node;
 }
 
+char* nodekind2str(Nodekind kind){
+	if(ND_ADD)	return "+";
+	else if(ND_SUB)	return "-";
+	else if(ND_MUL)	return "*";
+	else if(ND_DIV)	return "/";
+	else if(ND_NUM)	return "digit";
+	else if(ND_EQU) return "==";
+	else if(ND_NOTEQU) return "!=";
+	else if(ND_RIGHTINE) return "<";
+	else if(ND_RINEEQU) return "<=";
+	else if(ND_LEFTINE) return ">";
+	else if(ND_LINEEQU)	return ">=";
+	else if(ND_ASSIGN)	return "=";
+	else if(ND_LVAR)	return "locvar";
+	else if(ND_SEMICORO)	return ";";
+	else if(ND_RETURN)	return "return";
+	else if(ND_IF)	return "if";
+	else if(ND_ELSE)	return "else";
+	else if(ND_WHILE)	return "while";
+	else if(ND_FOR)		return "for";
+	else if(ND_FOREXPR)	return "forexpr";
+	else if(ND_BLOCK)	return "{}";
+	else if(ND_APP)	return "fun ->";
+	else return "nodekind2str error";
+}
+
+char *syntax_debug(Node *code){
+	
+	char *str[4];
+	char stra = calloc(1, sizeof(char*));
+	Nodekind kind = code->kind;
+
+	for(int i = 0;i < 4;i++)	str[i] = "NULL";
+	if(code->lhs)	str[0] = syntax_debug(code->lhs);
+	if(code->mhs)	str[1] = syntax_debug(code->mhs);
+	if(code->lhs)	str[2] = syntax_debug(code->lhs);
+	if(code->vector){
+		str[3] = "";
+		while(1){
+			code = code->vector;
+			str[3] = strcat(str[3], syntax_debug(code));
+			if(code->vector)	strcat(str[3], ", ");
+			else{
+				strcat(str[3], ")");
+				break;
+			}
+		}
+	}
+	sprintf(stra, "(%s, %s, %s, %s, %s)", nodekind2str(kind), str[0], str[1], str[2], str[3]);
+	return stra;
+}
+
+
 /*
 	exec parse
 */
