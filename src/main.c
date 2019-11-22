@@ -53,9 +53,6 @@ int main(int argc, char **argv) {
 	program();
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n\n");
-
-	printf("rsp_to_16n:\n");
-	printf("\tpush\t0xffff\n");
 	
 	printf("main:\n");
 	printf("\tpush\trbp\n");

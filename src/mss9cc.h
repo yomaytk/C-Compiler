@@ -119,5 +119,6 @@ extern char *user_input;
 
 void gen(Node *node);
 void gen_lval(Node *node);
+void rsp_16n(Node *node);
 
 extern int label_cnt;

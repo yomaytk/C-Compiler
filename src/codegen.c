@@ -107,12 +107,15 @@ void gen(Node *node){
 
 	if(kind == ND_APP){
 		Node *vec = node->vector;
+		int paramscnt = 0;
 		while(vec){
 			gen(vec);
 			vec = vec->vector;
+			paramscnt++;
 		}
 		vec = node->vector;
-
+		rsp_16n(node);
+		
 		printf("\tcall\t%s\n", node->token);
 		return;
 	}
@@ -159,4 +162,22 @@ void gen(Node *node){
 	}
 
 	printf("\tpush\trax\n");
+}
+
+void rsp_16n(Node *node){
+
+	printf("\tpush\trax\n");
+	printf("\tpush\trdx\n");
+	printf("\tmov\trax, rsp\n");
+	printf("\tdiv\t16\n");
+	printf("\tcmp\tedx, 0\n");
+	printf("\tje\t.Lrsp_eql_16n%d\n", node->labelcnt[0] = ++label_cnt);
+	printf("\tpop\trax\n");
+	printf("\tpop\trdx\n");
+	printf("\tpush\t0xffff\n");
+	printf(".Lrsp_eql_16n%d:\n", node->labelcnt[0]);
+	printf("\tpop\trax\n");
+	printf("\tpop\trdx\n");
+
+	return;
 }
