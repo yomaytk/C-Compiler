@@ -171,17 +171,14 @@ Node *stmt(){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_IF;
 		expect('(');
-		node->lhs = expr();
+		node->lhs = expr();		// ifの条件式
 		expect(')');
-		Node *node2 = stmt();
+		node->mhs = stmt();		// ifが真の場合の処理
 		if(consume("else")){
-			Node *node3 = calloc(1, sizeof(Node));
-			node3->kind = ND_ELSE;
-			node3->lhs = node2;
-			node3->rhs = stmt();
-			node->rhs = node3;
-		}else{
-			node->rhs = node2;
+			Node *elsenode = calloc(1, sizeof(Node));
+			elsenode->kind = ND_ELSE;
+			elsenode->lhs = stmt();
+			node->rhs = elsenode;
 		}
 		return node;
 	}else if(consume("while")){
@@ -341,8 +338,8 @@ Node *primary(){
 			Node *vec = node;
 			if(!consume(")")){
 				while(1){
-					vec->vector = expr();
-					vec = vec->vector;
+					vec->params = expr();
+					vec = vec->params;
 					if(!consume(",")){
 						expect(')');
 						break;

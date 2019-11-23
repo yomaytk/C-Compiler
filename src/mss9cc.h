@@ -81,10 +81,11 @@ struct Node{
 	Node *mhs;
 	Node *rhs;
 	Node *vector;
+	Node *params;
 	int val;
 	int offset;
 	char token[100];
-	int labelcnt[10];
+	int labelcnt[100];
 	// LVar *locals_s;
 	// LVar *locals_e;
 };

@@ -60,19 +60,21 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_IF){
+		// int lcnt = 0;
 		gen(node->lhs);
 		printf("\tpop\trax\n");
 		printf("\tcmp\trax, 0\n");
-		printf("\tje\t.Lelse%d\n", node->labelcnt[0] = ++label_cnt);
-		if(node->rhs->kind == ND_ELSE){
+		if(node->rhs && node->rhs->kind == ND_ELSE){
+			printf("\tje\t.Lelse%d\n", node->labelcnt[0] = ++label_cnt);
+			gen(node->mhs);
+			printf("\tjmp\t.Lifend%d\n", node->labelcnt[1] = ++label_cnt);
+			printf(".Lelse%d:\n", node->labelcnt[0]);
 			gen(node->rhs->lhs);
-			printf("\tjmp\t.Lend%d\n", node->labelcnt[1] = ++label_cnt);
-			printf(".Lelse%d:\n", node->labelcnt[0]);
-			gen(node->rhs->rhs);
-			printf(".Lend%d:\n", node->labelcnt[1]);
+			printf(".Lifend%d:\n", node->labelcnt[1]);
 		}else{
-			gen(node->rhs);
-			printf(".Lelse%d:\n", node->labelcnt[0]);
+			printf("\tje\t.Lifend%d\n", node->labelcnt[0] = ++label_cnt);
+			gen(node->mhs);
+			printf(".Lifend%d:\n", node->labelcnt[0]);
 		}
 		return;
 	}
@@ -122,10 +124,9 @@ void gen(Node *node){
 	if(kind == ND_APP){
 		Node *vec = node;
 		int paramscnt = 0;
-		for(;vec->vector;vec = vec->vector)	paramscnt++;
+		for(;vec->params;vec = vec->params)	paramscnt++;
 		rsp_16n(node, paramscnt);
-		for(vec = node;vec->vector;vec = vec->vector)	gen(vec->vector);
-		// vec = node->vector;
+		for(vec = node;vec->params;vec = vec->params)	gen(vec->params);
 		for(int i = paramscnt;i >= 1;i--){
 			printf("\tpop\t%s\n", reg64_name[i-1]);
 		}
@@ -150,8 +151,8 @@ void gen(Node *node){
 		}else{
 			printf("\tsub\trsp, 208\n");
 		}
-		Node *vec = node->vector;
-		for(int i = 1;vec;i++, vec = vec->vector){
+		Node *vec = node->params;
+		for(int i = 1;vec;i++, vec = vec->params){
 			if(vec->kind != ND_LVAR)	fun_params_err();
 			printf("\tmov\t[rbp-%d], %s\n", i*8, reg64_name[i-1]);
 		}
