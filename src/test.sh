@@ -3,9 +3,9 @@ try() {
 	expected="$1"
 	input="$2"
 
-	./mss9cc "$input" > tmp.s
-	gcc -o tmp tmp.s
-	./tmp
+	./mss9cc "$input" > compile.s
+	gcc -o compile compile.s
+	./compile
 	actual="$?"
 
 	if [ "$actual" = "$expected" ]; then
@@ -16,6 +16,23 @@ try() {
 		exit 1
 	fi
 }
+
+compile_err() {
+	input="$1"
+
+	./mss9cc "$input" > compile.s
+	if [ $? -gt 0 ]; then
+		:
+	else
+		echo -e "\e[31mFAILED\e[m"
+		echo "$input"
+		echo "must be abort"
+		exit 1
+	fi
+	
+}
+
+echo -e "\n\e[32m~~~ try test start ~~~\e[m\n"
 
 try 0 "0;"
 try 42 "42;"
@@ -62,4 +79,15 @@ try 33 "a = 10; if (a == 10) { b = 20; c = 3; a = a+b+c; return a;}"
 try 55 "sum = 0; for(cnt = 0; cnt <= 10; cnt = cnt+1){ sum = sum + cnt; } return sum;"
 try 12 "a = 0; if (1 == 2) return 2; else a = 5; if (1 == 3) return 6; else a = a+7; if (2 == 5) return 129; else return a;"
 
-echo -e "\e[32mSUCCESS\e[m"
+echo -e "\n\e[32mtry test SUCCESS\e[m\n"
+
+echo -e "\e[32m~~~ compile_err test start ~~~\e[m\n"
+
+compile_err "return j;;;"
+compile_err "for(a = 0;a < 4;;) if(1) return 5;"
+compile_err "foo(1,4,);"
+compile_err "foo(,);"
+compile_err "foo());"
+
+echo -e "\n\e[32m~~~ compile_err test SUCCESS ~~~\e[m"
+

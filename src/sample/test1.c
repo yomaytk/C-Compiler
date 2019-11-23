@@ -8,5 +8,7 @@ int hogehoge(int a, int b){
 
 
 int main(){
-	return hogehoge(3, 4);
+	int a = 3;
+	int b = 4;
+	return hogehoge(a, b);
 }
