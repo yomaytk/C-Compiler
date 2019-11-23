@@ -2,9 +2,14 @@
 
 int foo() { printf("call function OK!\n"); return 123;}
 
-int hoge(int a, int b){
-	printf("%d", a+b);
-	return a+b;
+int hoge(int a, int b, int c, int d){
+	printf("hoge = %d", a+b+c+d);
+	return a+b+c+d;
+}
+
+int hogehoge(){
+	printf("hogehoge!\n");
+	return 23;
 }
 
 int hogehoge1(int a, int b, int c, int d, int e, int f){

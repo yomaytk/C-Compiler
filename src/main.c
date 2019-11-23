@@ -60,26 +60,11 @@ int main(int argc, char **argv) {
 	program();
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n\n");
-	
-	// printf("main:\n");
-	// printf("\tpush\trbp\n");
-	// printf("\tmov\trbp, rsp\n");
-	// int vararea = 0; 
-	// LVar *lvar = locals_s;
-	// while(lvar){
-	// 	vararea += 8;
-	// 	lvar = lvar->next;
-	// }
-	// printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
-	
+
 	for(int i = 0;code[i];i++){
 		gen(code[i]);
-		printf("\tpop\trax\n");
+		// printf("\tpop\trax\n");
 	}
-
-	// printf("\tmov\trsp, rbp\n");
-	// printf("\tpop\trbp\n");
-	// printf("\tret\n");
 	
 	// for(int i = 0;code[i];i++){
 	// 	printf("code[%d]:\n", i);

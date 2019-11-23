@@ -2,11 +2,11 @@
 #include <string.h>
 
 
-int hogehoge(int a, int b){
-	return a+b;
+int hogehoge(){
+	return 10;
 }
 
 
 int main(){
-	return hogehoge(3, 5);
+	// return hogehoge();
 }

@@ -113,8 +113,8 @@ void gen(Node *node){
 		Node *vec = node->vector;
 		while(vec){
 			gen(vec);
-			printf("\tpop\trax\n");
 			vec = vec->vector;
+			printf("\tpop\trax\n");
 		}
 		return;
 	}
@@ -122,26 +122,34 @@ void gen(Node *node){
 	if(kind == ND_APP){
 		Node *vec = node;
 		int paramscnt = 0;
-		while(vec->vector){
-			gen(vec->vector);
-			vec = vec->vector;
-			paramscnt++;
-		}
-		vec = node->vector;
-		rsp_16n(node);
+		for(;vec->vector;vec = vec->vector)	paramscnt++;
+		rsp_16n(node, paramscnt);
+		for(vec = node;vec->vector;vec = vec->vector)	gen(vec->vector);
+		// vec = node->vector;
 		for(int i = paramscnt;i >= 1;i--){
 			printf("\tpop\t%s\n", reg64_name[i-1]);
 		}
 		printf("\tcall\t%s\n", node->token);
+		printf("\tpush\trax\n");
 		return;
 	}
 
 	if(kind == ND_FUN){
 		printf("%s:\n", node->token);
-		if(strncmp(node->token, "main", 4) == 0)	main_flag = 1;
 		printf("\tpush\trbp\n");
 		printf("\tmov\trbp, rsp\n");
-		printf("\tsub\trsp, 208\n");
+		if(strncmp(node->token, "main", 4) == 0){
+			main_flag = 1;
+			int vararea = 0; 
+			LVar *lvar = locals_s;
+			while(lvar){
+				vararea += 8;
+				lvar = lvar->next;
+			}
+			printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
+		}else{
+			printf("\tsub\trsp, 208\n");
+		}
 		Node *vec = node->vector;
 		for(int i = 1;vec;i++, vec = vec->vector){
 			if(vec->kind != ND_LVAR)	fun_params_err();
@@ -198,17 +206,17 @@ void gen(Node *node){
 	printf("\tpush\trax\n");
 }
 
-void rsp_16n(Node *node){
+void rsp_16n(Node *node, int paramscnt){
 
 	printf("\tpush\trax\n");
 	printf("\tmov\trax, rsp\n");
+	printf("\tsub\trax, %d\n", paramscnt);
 	printf("\tand\trax, 0xf\n");
 	printf("\tcmp\trax, 0\n");
-	printf("\tje\t.Lrsp_eql_16n%d\n", node->labelcnt[0] = ++label_cnt);
 	printf("\tpop\trax\n");
+	printf("\tje\t.Lrsp_eql_16n%d\n", node->labelcnt[0] = ++label_cnt);
 	printf("\tpush\t0xffff\n");
 	printf(".Lrsp_eql_16n%d:\n", node->labelcnt[0]);
-	printf("\tpop\trax\n");
 
 	return;
 }

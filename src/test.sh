@@ -76,14 +76,17 @@ echo -e "\n\e[32m=== try test start ===\e[m\n"
 # try 12 "hoge(a, b){ return a+b; } return hoge(5, 7);"
 try 10 "main(){ return 10; }"
 try 20 "main(){ a = 5; b = 4; c = 11; return a+b+c; }"
-try 10 "hoge(){ return 10; } main(){ return hoge(); }"
-# try 7 "hoge(a, b) { return a+b; } main(){ return hoge(3, 4); }"
+try 10 "hoge(){ return 10; } main(){ hoge(); }"
+try 22 "hoge(a, b, c, d){ a+b+c+d; } main(){ return hoge(5, 5, 10, 2); }"
+try 20 "hoge(a, b, c){ a+b+c; } main(){ return hoge(5, 5, 10); }"
+try 71 "hoge(a, b){ return a+b; } main(){ return hoge(5, 66); }"
+
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
 echo -e "\e[32m=== compile_err test start ===\e[m\n"
 
-compile_err "return 4;"
+# compile_err "return 4;"
 # compile_err "return j;;;"
 # compile_err "for(a = 0;a < 4;;) if(1) return 5;"
 # compile_err "foo(1,4,);"

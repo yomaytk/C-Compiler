@@ -129,6 +129,6 @@ extern int main_flag;
 
 void gen(Node *node);
 void gen_lval(Node *node);
-void rsp_16n(Node *node);
+void rsp_16n(Node *node, int paramscnt);
 
 extern int label_cnt;
