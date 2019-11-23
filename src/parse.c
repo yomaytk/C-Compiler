@@ -20,6 +20,13 @@ bool consume(char *op) {
 	return true;
 }
 
+bool consume_tokenstay(char *op){
+	if(token->len != strlen(op) || memcmp(token->str, op, token->len)){
+		return false;
+	}
+	return true;
+}
+
 Token *consume_ident(){
 	
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
@@ -50,8 +57,13 @@ bool at_eof() {
 	return token->kind == TK_EOF;
 }
 
-LVar *find_lvar(Token *tok){
-	for(LVar *lvar = locals_s;lvar;lvar = lvar->next){
+LVar *find_lvar(Token *tok, Node *node){
+	
+	LVar *locals_ss;
+
+	// if(node)	locals_ss = cur_node->locals_s;
+	locals_ss = locals_s;
+	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
 		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
 			return lvar;
 		}
@@ -205,14 +217,17 @@ Node *stmt(){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_BLOCK;
 		Node *vec = node;
+		// tmp_node = cur_node;
+		// cur_node = node;
 		while(!consume("}")){
 			vec->vector = stmt();
 			vec = vec->vector;
 		}
+		// cur_node = tmp_node;
 		return node;
-	}
-	else{
+	}else{
 		node = expr();
+		if(node->kind == ND_FUN)	return node;
 	}
 	expect(';');
 	return node;
@@ -334,10 +349,14 @@ Node *primary(){
 					}
 				}
 			}
+			if(consume_tokenstay("{")){
+				node->kind = ND_FUN;
+				node->lhs = stmt();
+			}
 		}else{
 			node->kind = ND_LVAR;
 		}
-		LVar *lvar = find_lvar(tok);
+		LVar *lvar = find_lvar(tok, NULL);
 		if(lvar){
 			node->offset = lvar->offset;
 		}else{

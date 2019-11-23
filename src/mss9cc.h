@@ -70,6 +70,7 @@ typedef enum{
 	ND_FOREXPR,		// condition of for
 	ND_BLOCK,
 	ND_APP,
+	ND_FUN,
 } Nodekind;
 
 typedef struct Node Node;
@@ -84,6 +85,8 @@ struct Node{
 	int offset;
 	char token[100];
 	int labelcnt[10];
+	// LVar *locals_s;
+	// LVar *locals_e;
 };
 
 void program();
@@ -97,6 +100,7 @@ Node *mul();
 Node *unary();
 Node *primary();
 bool consume(char *op);
+bool consume_tokenstay(char *op);
 Token *consume_ident();
 int expect_number();
 void expect(char op);
@@ -106,8 +110,11 @@ bool at_eof();
 
 extern Node *code[100];
 
-LVar *find_lvar(Token *tok);
+LVar *find_lvar(Token *tok, Node *node);
 char* syntax_debug(Node *code);
+
+extern Node *cur_node;
+extern Node *tmp_node;
 
 /* ~~~~~ main.c ~~~~~ */
 
@@ -116,6 +123,7 @@ void error(char *str);
 
 extern Token *token;
 extern char *user_input;
+extern int main_flag;
 
 /* ~~~~~ codegen.c ~~~~~ */
 

@@ -16,6 +16,10 @@ char *user_input;
 // label number for uniqueness
 int label_cnt = 0;
 
+Node *cur_node;
+Node *tmp_node;
+
+int main_flag = 0;
 
 // notice price of error
 void error_at(char *loc, char *fmt, ...) {
@@ -50,34 +54,39 @@ int main(int argc, char **argv) {
 	// debug of lexer
 	// { tokenize_debug(token); return 0; }
 
+	cur_node = calloc(1, sizeof(Node));
+	tmp_node = cur_node;
+
 	program();
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n\n");
 	
-	printf("main:\n");
-	printf("\tpush\trbp\n");
-	printf("\tmov\trbp, rsp\n");
-	int vararea = 0; 
-	LVar *lvar = locals_s;
-	while(lvar){
-		vararea += 8;
-		lvar = lvar->next;
-	}
-	printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
-
+	// printf("main:\n");
+	// printf("\tpush\trbp\n");
+	// printf("\tmov\trbp, rsp\n");
+	// int vararea = 0; 
+	// LVar *lvar = locals_s;
+	// while(lvar){
+	// 	vararea += 8;
+	// 	lvar = lvar->next;
+	// }
+	// printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
+	
 	for(int i = 0;code[i];i++){
 		gen(code[i]);
 		printf("\tpop\trax\n");
 	}
 
-	printf("\tmov\trsp, rbp\n");
-	printf("\tpop\trbp\n");
-	printf("\tret\n");
+	// printf("\tmov\trsp, rbp\n");
+	// printf("\tpop\trbp\n");
+	// printf("\tret\n");
 	
 	// for(int i = 0;code[i];i++){
 	// 	printf("code[%d]:\n", i);
 	// 	printf("%s\n", syntax_debug(code[i]));
 	// }
+
+	if(!main_flag)	error("main関数がありません.");
 
 	return 0;
 }

@@ -1,5 +1,17 @@
-#include<stdio.h>
-#include"mss9cc.h"
+#include <ctype.h>
+#include <stdarg.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "mss9cc.h"
+
+char *reg64_name[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+
+void fun_params_err(){
+	fprintf(stderr, "仮引数が正しくありません.");
+	exit(1);
+}
 
 void gen_lval(Node *node){
 	if(node->kind != ND_LVAR){
@@ -35,14 +47,6 @@ void gen(Node *node){
 		printf("\tpop\trax\n");	// address of lvalue
 		printf("\tmov\t[rax], rdi\n");
 		printf("\tpush\trdi\n");
-		return;
-	}else if(kind == ND_BLOCK){
-		Node *vec = node->vector;
-		while(vec){
-			gen(vec);
-			printf("\tpop\trax\n");
-			vec = vec->vector;
-		}
 		return;
 	}
 
@@ -105,6 +109,16 @@ void gen(Node *node){
 		return;
 	}
 
+	if(kind == ND_BLOCK){
+		Node *vec = node->vector;
+		while(vec){
+			gen(vec);
+			printf("\tpop\trax\n");
+			vec = vec->vector;
+		}
+		return;
+	}
+
 	if(kind == ND_APP){
 		Node *vec = node;
 		int paramscnt = 0;
@@ -115,13 +129,28 @@ void gen(Node *node){
 		}
 		vec = node->vector;
 		rsp_16n(node);
-		if(paramscnt == 6){ printf("\tpop\tr9\n"); paramscnt--;}
-		if(paramscnt == 5){ printf("\tpop\tr8\n"); paramscnt--;}
-		if(paramscnt == 4){ printf("\tpop\trcx\n"); paramscnt--;}
-		if(paramscnt == 3){ printf("\tpop\trdx\n"); paramscnt--;}
-		if(paramscnt == 2){ printf("\tpop\trsi\n"); paramscnt--;}
-		if(paramscnt == 1){ printf("\tpop\trdi\n"); paramscnt--;}
+		for(int i = paramscnt;i >= 1;i--){
+			printf("\tpop\t%s\n", reg64_name[i-1]);
+		}
 		printf("\tcall\t%s\n", node->token);
+		return;
+	}
+
+	if(kind == ND_FUN){
+		printf("%s:\n", node->token);
+		if(strncmp(node->token, "main", 4) == 0)	main_flag = 1;
+		printf("\tpush\trbp\n");
+		printf("\tmov\trbp, rsp\n");
+		printf("\tsub\trsp, 208\n");
+		Node *vec = node->vector;
+		for(int i = 1;vec;i++, vec = vec->vector){
+			if(vec->kind != ND_LVAR)	fun_params_err();
+			printf("\tmov\t[rbp-%d], %s\n", i*8, reg64_name[i-1]);
+		}
+		gen(node->lhs);
+		printf("\tmov\trsp, rbp\n");
+		printf("\tpop\trbp\n");
+		printf("\tret\n");
 		return;
 	}
 
