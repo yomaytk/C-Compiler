@@ -60,29 +60,31 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_IF){
+		int endid = ++label_cnt;
 		if(!node->rhs){
 			gen(node->lhs);
 			printf("\tpop\trax\n");
 			printf("\tcmp\trax, 0\n");
-			printf("\tje\t.Lifend%d\n", node->labelcnt[0] = ++label_cnt);
+			printf("\tje\t.Lifend%d\n", endid);
 			gen(node->mhs);
-			printf(".Lifend%d:\n", node->labelcnt[0]);
+			printf(".Lifend%d:\n", endid);
 			return;
 		}
 
 		int lcnt = 0;
-
 		for(;node && node->kind == ND_IF;node = node->rhs){
 			gen(node->lhs);
 			printf("\tpop\trax\n");
 			printf("\tcmp\trax, 0\n");
 			printf("\tje\t.Lifelse%d\n", node->labelcnt[++lcnt] = ++label_cnt);
 			gen(node->mhs);
+			printf("\tjmp\t.Lifend%d\n", endid);
 			printf(".Lifelse%d:\n", node->labelcnt[lcnt]);
 		}
 		if(node && node->kind == ND_ELSE){
 			gen(node->rhs);
 		}
+		printf(".Lifend%d:\n", endid);
 		return;
 	}
 
