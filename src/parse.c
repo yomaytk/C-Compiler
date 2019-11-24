@@ -27,6 +27,16 @@ bool consume_tokenstay(char *op){
 	return true;
 }
 
+bool consume_moveon(char *op){
+	
+	if(token->len != strlen(op) || memcmp(token->str, op, token->len)){
+		token = token->next;
+		return false;
+	}
+	token = token->next;
+	return true;
+}
+
 Token *consume_ident(){
 	
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
@@ -89,6 +99,27 @@ Node *new_node_num(int val){
 	node->kind = ND_NUM;
 	node->val = val;
 	return node;
+}
+
+/* 現在対象のノードにLVarを追加する */
+void make_lvar(Token *tok, Node *node, int param_f){
+	LVar *lvar = calloc(1, sizeof(LVar));
+	lvar->len = tok->len;
+	lvar->name = tok->str;
+	if(cur_node->locals_e){
+		cur_node->locals_e->next = lvar;
+		lvar->offset = cur_node->locals_e->offset + 8;
+		if(param_f)	cur_node->params_cnt++;
+		else 	cur_node->locals_cnt++;
+	}else{
+		cur_node->locals_s = lvar;
+		lvar->offset = 8;
+		if(param_f)	cur_node->params_cnt = 1;
+		else 	cur_node->locals_cnt = 1;
+	}
+	if(node)	node->offset = lvar->offset;
+	cur_node->locals_e = lvar;
+	return;
 }
 
 char* nodekind2str(Nodekind kind){
@@ -334,30 +365,54 @@ Node *primary(){
 		Token *token2 = token;
 		token = token->next;
 		if(consume("(")){
-			node->kind = ND_APP;
-			Node *tmp_node = cur_node;
-			cur_node = node;
+			/* 関数名の保存*/
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
-			Node *vec = node;
-			if(!consume(")")){
-				node->params_cnt = 0;
-				while(1){
-					vec->params = expr();
-					vec = vec->params;
-					node->params_cnt++;
-					if(!consume(",")){
-						expect(')');
-						break;
-					}
-				}
+			/* 関数の定義または呼び出しの判断 */
+			token2 = token;
+			for(;!consume_moveon(")");){
+				if(!token->next)	error("consume_moveonで不正なtokenが検出されました.");
+				continue;
 			}
-			if(consume_tokenstay("{")){
+			if(consume("{")){
 				node->kind = ND_FUN;
 				cur_node = node;
-				node->lhs = stmt();
 			}else{
-				cur_node = tmp_node;
+				node->kind = ND_APP;
+			}
+			token = token2;
+			/* === */
+			Node *vec = node;
+			/* 関数定義の場合 */
+			if(node->kind == ND_FUN){
+				if(!consume(")")){
+					while(1){
+						Token *tok = consume_ident();
+						if(!tok)	error("関数定義の仮引数が正しくありません.");
+						make_lvar(tok, NULL, 1);
+						token = token->next;
+						if(!consume(")"))	expect(',');
+						else 	break;
+					}
+				}
+				/* ブロック内の処理 */
+				node->lhs = stmt();
+			/* 関数適用の場合 */
+			}else if(node->kind == ND_APP){
+				node->params_cnt = 0;
+				if(!consume(")")){
+					while(1){
+						vec->params = expr();
+						vec = vec->params;
+						node->params_cnt++;
+						if(!consume(",")){
+							expect(')');
+							break;
+						}
+					}
+				}
+			}else{
+				error("関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
 			}
 		}else{
 			node->kind = ND_LVAR;
@@ -368,20 +423,7 @@ Node *primary(){
 		if(lvar){
 			node->offset = lvar->offset;
 		}else{
-			lvar = calloc(1, sizeof(LVar));
-			lvar->len = tok->len;
-			lvar->name = tok->str;
-			if(cur_node->locals_e){
-				cur_node->locals_e->next = lvar;
-				lvar->offset = cur_node->params_cnt*8 + cur_node->locals_e->offset + 8;
-				cur_node->locals_cnt++;
-			}else{
-				cur_node->locals_s = lvar;
-				lvar->offset = cur_node->params_cnt*8 + 8;
-				cur_node->locals_cnt = 1;
-			}
-			node->offset = cur_node->params_cnt*8 + lvar->offset;
-			cur_node->locals_e = lvar;
+			make_lvar(tok, node, 0);
 		}
 		return node;
 	}
