@@ -35,7 +35,6 @@ compile_err() {
 
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
-
 try 10 "main(){ return 10; }"
 try 20 "main(){ a = 5; b = 4; c = 11; return a+b+c; }"
 try 10 "hoge(){ return 10; } main(){ hoge(); }"
@@ -44,18 +43,23 @@ try 20 "hoge(a, b, c){ a+b+c; } main(){ return hoge(5, 5, 10); }"
 try 71 "hoge(a, b){ return a+b; } main(){ hoge(5, 66); }"
 try 23 "main(){if (3 > 2)	return 23; else 33;}"
 try 23 "main(){a = 10; b = 23; if(a+b+5 == 38) return 23;}"
-# try	10 "fib(n){ if(n == 1) 1; else fib(n-1)+fib(n-2);} main(){ return fib(10); }"
+try 23 "main(){ if(0) {return 13;} else {return 23;}}"
+try 33 "main(){if (0) return 13; else if(1) return 33; else if(1) return 76; return 45;}"
+try 33 "main(){if (0) { return 13; } else if(0) return 23; else if(1) return 33; else if(0) { 43; } else if(0) { return 53; } else 63; }"
+try 23 "main(){ if(1 < 0) 13; else if(1 < 3) 23; }"
+try 10 "hoge(a) { a; } hoge2(b){ b; } main(){ hoge(10)+hoge2(7); }"
+# try	10 "fib(n){ if(n == 0) 0; else fib(n-1)+1; } main(){ return fib(10); }"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
 echo -e "\e[32m=== compile_err test start ===\e[m\n"
 
-compile_err "return 4;"
-compile_err "main(){return j;;;}"
-compile_err "main(){for(a = 0;a < 4;;) if(1) return 5;}"
-compile_err "main(){foo(1,4,);}"
-compile_err "main(){foo(,);}"
-compile_err "main(){foo());}"
+# compile_err "return 4;"
+# compile_err "main(){return j;;;}"
+# compile_err "main(){for(a = 0;a < 4;;) if(1) return 5;}"
+# compile_err "main(){foo(1,4,);}"
+# compile_err "main(){foo(,);}"
+# compile_err "main(){foo());}"
 
 echo -e "\n\e[32m=== compile_err test SUCCESS ===\e[m"
 

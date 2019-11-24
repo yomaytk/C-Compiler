@@ -48,6 +48,7 @@ void expect(char op) {
 int expect_number() {
 	if (token->kind != TK_NUM)
 	error_at(token->str, "数ではありません");
+	// error(token->str);
 	int val = token->val;
 	token = token->next;
 	return val;
@@ -174,11 +175,15 @@ Node *stmt(){
 		node->lhs = expr();		// ifの条件式
 		expect(')');
 		node->mhs = stmt();		// ifが真の場合の処理
-		if(consume("else")){
-			Node *elsenode = calloc(1, sizeof(Node));
-			elsenode->kind = ND_ELSE;
-			elsenode->lhs = stmt();
-			node->rhs = elsenode;
+		if(consume_tokenstay("else")){
+			if(consume("else") && consume_tokenstay("if")){
+				node->rhs = stmt();
+			}else{
+				Node *elsenode = calloc(1, sizeof(Node));
+				elsenode->kind = ND_ELSE;
+				elsenode->rhs = stmt();
+				node->rhs = elsenode;
+			}
 		}
 		return node;
 	}else if(consume("while")){

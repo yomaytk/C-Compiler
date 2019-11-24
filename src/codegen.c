@@ -60,21 +60,28 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_IF){
-		// int lcnt = 0;
-		gen(node->lhs);
-		printf("\tpop\trax\n");
-		printf("\tcmp\trax, 0\n");
-		if(node->rhs && node->rhs->kind == ND_ELSE){
-			printf("\tje\t.Lelse%d\n", node->labelcnt[0] = ++label_cnt);
-			gen(node->mhs);
-			printf("\tjmp\t.Lifend%d\n", node->labelcnt[1] = ++label_cnt);
-			printf(".Lelse%d:\n", node->labelcnt[0]);
-			gen(node->rhs->lhs);
-			printf(".Lifend%d:\n", node->labelcnt[1]);
-		}else{
+		if(!node->rhs){
+			gen(node->lhs);
+			printf("\tpop\trax\n");
+			printf("\tcmp\trax, 0\n");
 			printf("\tje\t.Lifend%d\n", node->labelcnt[0] = ++label_cnt);
 			gen(node->mhs);
 			printf(".Lifend%d:\n", node->labelcnt[0]);
+			return;
+		}
+
+		int lcnt = 0;
+
+		for(;node && node->kind == ND_IF;node = node->rhs){
+			gen(node->lhs);
+			printf("\tpop\trax\n");
+			printf("\tcmp\trax, 0\n");
+			printf("\tje\t.Lifelse%d\n", node->labelcnt[++lcnt] = ++label_cnt);
+			gen(node->mhs);
+			printf(".Lifelse%d:\n", node->labelcnt[lcnt]);
+		}
+		if(node && node->kind == ND_ELSE){
+			gen(node->rhs);
 		}
 		return;
 	}
@@ -125,7 +132,7 @@ void gen(Node *node){
 		Node *vec = node;
 		int paramscnt = 0;
 		for(;vec->params;vec = vec->params)	paramscnt++;
-		rsp_16n(node, paramscnt);
+		// rsp_16n(node, paramscnt);
 		for(vec = node;vec->params;vec = vec->params)	gen(vec->params);
 		for(int i = paramscnt;i >= 1;i--){
 			printf("\tpop\t%s\n", reg64_name[i-1]);

@@ -2,11 +2,12 @@
 #include <string.h>
 
 
-int hogehoge(){
-	return 10;
+int fib(int n){
+	if(n == 0)	0;
+	else 	fib(n-1)+1;
 }
 
 
 int main(){
-	// return hogehoge();
+	fib(10);
 }
