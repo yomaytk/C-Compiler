@@ -54,9 +54,6 @@ int main(int argc, char **argv) {
 	// debug of lexer
 	// { tokenize_debug(token); return 0; }
 
-	cur_node = calloc(1, sizeof(Node));
-	tmp_node = cur_node;
-
 	program();
 	printf(".intel_syntax noprefix\n");
 	printf(".global main\n\n");

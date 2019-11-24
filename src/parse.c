@@ -6,8 +6,8 @@
 #include <string.h>
 #include "mss9cc.h"
 
-LVar *locals_s; // list of variables
-LVar *locals_e;
+// LVar *locals_s; // list of variables
+// LVar *locals_e;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
@@ -62,8 +62,8 @@ LVar *find_lvar(Token *tok, Node *node){
 	
 	LVar *locals_ss;
 
-	// if(node)	locals_ss = cur_node->locals_s;
-	locals_ss = locals_s;
+	if(!node)	error("find_lvarがNULLノードに対して呼ばれました.");
+	locals_ss = node->locals_s;
 	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
 		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
 			return lvar;
@@ -219,13 +219,10 @@ Node *stmt(){
 		node = calloc(1, sizeof(Node));
 		node->kind = ND_BLOCK;
 		Node *vec = node;
-		// tmp_node = cur_node;
-		// cur_node = node;
 		while(!consume("}")){
 			vec->vector = stmt();
 			vec = vec->vector;
 		}
-		// cur_node = tmp_node;
 		return node;
 	}else{
 		node = expr();
@@ -338,13 +335,17 @@ Node *primary(){
 		token = token->next;
 		if(consume("(")){
 			node->kind = ND_APP;
+			Node *tmp_node = cur_node;
+			cur_node = node;
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
 			Node *vec = node;
 			if(!consume(")")){
+				node->params_cnt = 0;
 				while(1){
 					vec->params = expr();
 					vec = vec->params;
+					node->params_cnt++;
 					if(!consume(",")){
 						expect(')');
 						break;
@@ -353,27 +354,34 @@ Node *primary(){
 			}
 			if(consume_tokenstay("{")){
 				node->kind = ND_FUN;
+				cur_node = node;
 				node->lhs = stmt();
+			}else{
+				cur_node = tmp_node;
 			}
 		}else{
 			node->kind = ND_LVAR;
 		}
-		LVar *lvar = find_lvar(tok, NULL);
+		LVar *lvar;
+		if(!cur_node)	lvar = find_lvar(tok, NULL);
+		else 	lvar = find_lvar(tok, cur_node);
 		if(lvar){
 			node->offset = lvar->offset;
 		}else{
 			lvar = calloc(1, sizeof(LVar));
 			lvar->len = tok->len;
 			lvar->name = tok->str;
-			if(locals_e != NULL){
-				locals_e->next = lvar;
-				lvar->offset = locals_e->offset + 8;
+			if(cur_node->locals_e){
+				cur_node->locals_e->next = lvar;
+				lvar->offset = cur_node->params_cnt*8 + cur_node->locals_e->offset + 8;
+				cur_node->locals_cnt++;
 			}else{
-				lvar->offset = 8;
-				locals_s = lvar;
+				cur_node->locals_s = lvar;
+				lvar->offset = cur_node->params_cnt*8 + 8;
+				cur_node->locals_cnt = 1;
 			}
-			node->offset = lvar->offset;
-			locals_e = lvar;
+			node->offset = cur_node->params_cnt*8 + lvar->offset;
+			cur_node->locals_e = lvar;
 		}
 		return node;
 	}

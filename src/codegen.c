@@ -148,16 +148,20 @@ void gen(Node *node){
 		printf("\tmov\trbp, rsp\n");
 		if(strncmp(node->token, "main", 4) == 0){
 			main_flag = 1;
-			int vararea = 0; 
-			LVar *lvar = locals_s;
-			while(lvar){
-				vararea += 8;
-				lvar = lvar->next;
-			}
-			printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
-		}else{
-			printf("\tsub\trsp, 208\n");
 		}
+		// if(strncmp(node->token, "main", 4) == 0){
+		// 	main_flag = 1;
+		// 	int vararea = 0; 
+		// 	LVar *lvar = locals_s;
+		// 	while(lvar){
+		// 		vararea += 8;
+		// 		lvar = lvar->next;
+		// 	}
+		// 	printf("\tsub\trsp, %d\n", vararea);	// ローカル変数の場所をスタック上に確保しないと、別の値がローカル変数のアドレスに格納される恐れがある。
+		// }else{
+		// 	printf("\tsub\trsp, 208\n");
+		// }
+		printf("\tsub\trsp, %d\n", (node->params_cnt + node->locals_cnt)*8);
 		Node *vec = node->params;
 		for(int i = 1;vec;i++, vec = vec->params){
 			if(vec->kind != ND_LVAR)	fun_params_err();

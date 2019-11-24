@@ -38,8 +38,8 @@ struct LVar {
 	int offset;
 };
 
-extern LVar *locals_s;
-extern LVar *locals_e;
+// extern LVar *locals_s;
+// extern LVar *locals_e;
 
 int is_alnum(char c);
 void tokenize_debug(Token *tok);
@@ -48,6 +48,7 @@ void tokenize_debug(Token *tok);
 
 // signal type
 typedef enum{
+	ND_MAIN,
 	ND_ADD,			// +
 	ND_SUB,			// -
 	ND_MUL,			// *
@@ -65,7 +66,6 @@ typedef enum{
 	ND_RETURN,		// return
 	ND_IF,			// if
 	ND_ELSE,		// else
-	ND_ELSEIF,
 	ND_WHILE,
 	ND_FOR,
 	ND_FOREXPR,		// condition of for
@@ -87,8 +87,10 @@ struct Node{
 	int offset;
 	char token[100];
 	int labelcnt[100];
-	// LVar *locals_s;
-	// LVar *locals_e;
+	LVar *locals_s;
+	LVar *locals_e;
+	int locals_cnt;
+	int params_cnt;
 };
 
 void program();
