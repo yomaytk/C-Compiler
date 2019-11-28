@@ -347,6 +347,10 @@ Node *unary(){
 		return primary();
 	}else if(consume("-")){
 		return new_node(ND_SUB, new_node_num(0), primary());
+	}else if(consume("&")){
+		return new_node(ND_ADDR, unary(), NULL);
+	}else if(consume("*")){
+		return new_node(ND_DEREF, unary(), NULL);
 	}else{
 		return primary();
 	}

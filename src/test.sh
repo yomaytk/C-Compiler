@@ -51,8 +51,13 @@ try 33 "main(){if (0) return 13; else if(1) return 33; else if(1) return 76; ret
 try 33 "main(){if (0) { return 13; } else if(0) return 23; else if(1) return 33; else if(0) { 43; } else if(0) { return 53; } else 63; }"
 try 23 "main(){ if(1 < 0) 13; else if(1 < 3) 23; }"
 try 33 "hoge1(a, b, c) { a+b+c; } hoge2(a, b, c, d){ a+b+c+d; } main(){ hoge1(10, 7, 3)+hoge2(1, 2, 3, 7); }"
+try 34 "hoge1(a, b, c) {a+b+c;} hoge2(a, b, c, d){a+b+c+d;} hoge3(a, b, c, d, e, f){a+b+c+d+e+f;} main(){return hoge1(2, 4, 4)+hoge2(1, 1, 5, 3)+hoge3(2, 2, 4, 4, 1, 1);}"
 try	10 "fib(n){ if(n == 0) return 0; else fib(n-1)+1; } main(){ return fib(10); }"
 try 55 "fib(n){ if(n == 0) 0; else if(n == 1) return 1; else fib(n-1)+fib(n-2);} main(){ return fib(10); }"
+try 5 "main(){ a = 3; {a = 5; return a;} }"
+try 55 "sum(m, n){ acc = 0; for (i = m; i <= n; i = i + 1) acc = acc + i; return acc; } main() { return sum(1, 10);}"
+try 3 "main(){x = 3;y = &x;return *y;}"
+try 3 "main(){x = 3;y = 5;z = &y + 8;return *z;}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 

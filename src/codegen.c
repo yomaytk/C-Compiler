@@ -163,6 +163,19 @@ void gen(Node *node){
 		return;
 	}
 
+	if(kind == ND_ADDR){
+		gen_lval(node->lhs);
+		return;
+	}
+
+	if(kind == ND_DEREF){
+		gen(node->lhs);
+		printf("\tpop\trax\n");
+		printf("\tmov\trax, [rax]\n");
+		printf("\tpush\trax\n");
+		return;
+	}
+
 	gen(node->lhs);
 	gen(node->rhs);
 
