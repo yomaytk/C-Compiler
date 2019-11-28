@@ -6,8 +6,8 @@
 #include <string.h>
 #include "mss9cc.h"
 
-// LVar *locals_s; // list of variables
-// LVar *locals_e;
+LVar *function_set_s = NULL;
+LVar *function_set_e = NULL;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
@@ -72,7 +72,6 @@ LVar *find_lvar(Token *tok, Node *node){
 	
 	LVar *locals_ss;
 
-	if(!node)	error("find_lvarがNULLノードに対して呼ばれました.");
 	locals_ss = node->locals_s;
 	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
 		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
@@ -363,6 +362,13 @@ Node *primary(){
 		expect(')');
 		return node;
 	}
+	int def_flag = 0;		
+	// 型定義があるかの判定
+	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
+		def_flag = 1;
+		token = token->next;
+	}
+	// =====
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
@@ -372,6 +378,7 @@ Node *primary(){
 			/* 関数名の保存*/
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
+			node->len = token2->len;
 			/* 関数の定義または呼び出しの判断 */
 			token2 = token;
 			for(;!consume_moveon(")");){
@@ -389,8 +396,14 @@ Node *primary(){
 			Node *vec = node;
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
+				if(!def_flag)	error("関数の型が定義されていません.");
 				if(!consume(")")){
 					while(1){
+						if(strncmp(token->str, "int", token->len) == 0){
+							token = token->next;
+						}else{
+							error("関数定義の引数の型が不正です.");
+						}
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
 						make_lvar(tok, NULL, 1);
@@ -399,10 +412,29 @@ Node *primary(){
 						else 	break;
 					}
 				}
+				// 関数定義の名前の追加
+				LVar *funlvar = calloc(1, sizeof(LVar));
+				funlvar->name = tok->str;
+				funlvar->len = tok->len;
+				if(!function_set_s){
+					function_set_s = function_set_e = funlvar;
+				}else{
+					function_set_e->next = funlvar;
+					function_set_e = funlvar;
+				}
 				/* ブロック内の処理 */
 				node->lhs = stmt();
+				return node;
 			/* 関数適用の場合 */
 			}else if(node->kind == ND_APP){
+				if(def_flag)	error("関数適用に型は必要ありません.");
+				// 関数が存在するか確認
+				LVar *lvar = function_set_s;
+				for(;lvar;lvar = lvar->next){
+					if(lvar->len == tok->len && strncmp(lvar->name, tok->str, tok->len) == 0) break;
+				}
+				if(!lvar)	error("定義されていない関数の参照です.");
+				// =====
 				node->params_cnt = 0;
 				if(!consume(")")){
 					while(1){
@@ -415,6 +447,7 @@ Node *primary(){
 						}
 					}
 				}
+				return node;
 			}else{
 				error("関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
 			}
@@ -422,14 +455,19 @@ Node *primary(){
 			node->kind = ND_LVAR;
 		}
 		LVar *lvar;
-		if(!cur_node)	lvar = find_lvar(tok, NULL);
+		if(!cur_node)	error("NULLに対してmake_lvarを呼び出そうとしています.");
 		else 	lvar = find_lvar(tok, cur_node);
 		if(lvar){
 			node->offset = lvar->offset;
-		}else{
+		}else if(def_flag){
 			make_lvar(tok, node, 0);
+		}else{
+			error("定義されていない変数の参照です.");
 		}
 		return node;
+	}else if(def_flag){
+		error_at(token->str, "変数以外に型はつけられません.");
 	}
+	
 	return new_node_num(expect_number());
 }

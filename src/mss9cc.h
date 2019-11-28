@@ -88,6 +88,7 @@ struct Node{
 	int val;
 	int offset;
 	char token[100];
+	int len;
 	int labelcnt[100];
 	LVar *locals_s;
 	LVar *locals_e;
@@ -121,6 +122,8 @@ char* syntax_debug(Node *code);
 
 extern Node *cur_node;
 extern Node *tmp_node;
+extern LVar *function_set_s;
+extern LVar *function_set_e;
 
 /* ~~~~~ main.c ~~~~~ */
 
