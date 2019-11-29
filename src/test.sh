@@ -3,8 +3,8 @@ try() {
 	expected="$1"
 	input="$2"
 
-	./mss9cc "$input" > compile.s
-	gcc -o compile compile.s
+	./mss9cc "$input" > compile1.s
+	gcc -o compile compile1.s
 	./compile
 	actual="$?"
 
@@ -21,7 +21,7 @@ compile_err() {
 	input="$1"
 
 	echo "$input"
-	./mss9cc "$input" > compile.s
+	./mss9cc "$input" > compile2.s
 	if [ $? -gt 0 ]; then
 		:
 	else
@@ -60,6 +60,7 @@ try 55 "int main(){ int ans = 0; for(int i = 0;i <= 10;i = i + 1){ ans = ans + i
 try 55 "int sum(int m, int n){ int acc = 0; for (int i = m; i <= n; i = i + 1) acc = acc + i; return acc; } int main() { return sum(1, 10);}"
 try 3 "int main(){int x = 3;int y = &x;return *y;}"
 try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
+try 6 "int main(){ int x; x = 6; return x; }"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 

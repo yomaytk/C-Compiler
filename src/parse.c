@@ -382,7 +382,7 @@ Node *primary(){
 			/* 関数の定義または呼び出しの判断 */
 			token2 = token;
 			for(;!consume_moveon(")");){
-				if(!token->next)	error("consume_moveonで不正なtokenが検出されました.");
+				if(!token->next)	error_at(token->str, "consume_moveonで不正なtokenが検出されました.");
 				continue;
 			}
 			if(consume("{")){
@@ -396,13 +396,13 @@ Node *primary(){
 			Node *vec = node;
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
-				if(!def_flag)	error("関数の型が定義されていません.");
+				if(!def_flag)	error_at(token->str, "関数の型が定義されていません.");
 				if(!consume(")")){
 					while(1){
 						if(strncmp(token->str, "int", token->len) == 0){
 							token = token->next;
 						}else{
-							error("関数定義の引数の型が不正です.");
+							error_at(token->str, "関数定義の引数の型が不正です.");
 						}
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
@@ -427,13 +427,13 @@ Node *primary(){
 				return node;
 			/* 関数適用の場合 */
 			}else if(node->kind == ND_APP){
-				if(def_flag)	error("関数適用に型は必要ありません.");
+				if(def_flag)	error_at(token->str, "関数適用に型は必要ありません.");
 				// 関数が存在するか確認
 				LVar *lvar = function_set_s;
 				for(;lvar;lvar = lvar->next){
 					if(lvar->len == tok->len && strncmp(lvar->name, tok->str, tok->len) == 0) break;
 				}
-				if(!lvar)	error("定義されていない関数の参照です.");
+				if(!lvar)	error_at(token->str, "定義されていない関数の参照です.");
 				// =====
 				node->params_cnt = 0;
 				if(!consume(")")){
@@ -449,20 +449,20 @@ Node *primary(){
 				}
 				return node;
 			}else{
-				error("関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
+				error_at(token->str, "関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
 			}
 		}else{
 			node->kind = ND_LVAR;
 		}
 		LVar *lvar;
-		if(!cur_node)	error("NULLに対してmake_lvarを呼び出そうとしています.");
+		if(!cur_node)	error_at(token->str, "NULLに対してmake_lvarを呼び出そうとしています.");
 		else 	lvar = find_lvar(tok, cur_node);
 		if(lvar){
 			node->offset = lvar->offset;
 		}else if(def_flag){
 			make_lvar(tok, node, 0);
 		}else{
-			error("定義されていない変数の参照です.");
+			error_at(token->str, "定義されていない変数の参照です.");
 		}
 		return node;
 	}else if(def_flag){
