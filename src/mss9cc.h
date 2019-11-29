@@ -88,12 +88,12 @@ struct Node{
 	int val;
 	int offset;
 	char token[100];
-	int len;
 	int labelcnt[100];
 	LVar *locals_s;
 	LVar *locals_e;
 	int locals_cnt;
 	int params_cnt;
+	Type *type;
 };
 
 void program();
@@ -124,6 +124,16 @@ extern Node *cur_node;
 extern Node *tmp_node;
 extern LVar *function_set_s;
 extern LVar *function_set_e;
+
+typedef struct Type Type;
+
+struct Type {
+	enum {
+		INT,	// int
+		PTR,	// pointer
+	} ty;
+	Type *ptr_to;
+};
 
 /* ~~~~~ main.c ~~~~~ */
 

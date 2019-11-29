@@ -349,7 +349,15 @@ Node *unary(){
 	}else if(consume("&")){
 		return new_node(ND_ADDR, unary(), NULL);
 	}else if(consume("*")){
-		return new_node(ND_DEREF, unary(), NULL);
+		Node *node = calloc(1, sizeof(Node));
+		node->type->ty = PTR;
+		Type *type = node->type;
+		for(;consume("*");type = type->ptr_to){
+			type->ptr_to = PTR;
+		}
+		node->lhs = unary();
+		type->ty = node->lhs->type->ty;
+		return node;
 	}else{
 		return primary();
 	}
@@ -362,11 +370,13 @@ Node *primary(){
 		expect(')');
 		return node;
 	}
-	int def_flag = 0;		
+	int def_flag = 0;
+	Type *this_type = calloc(1, sizeof(Type));
 	// 型定義があるかの判定
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
 		def_flag = 1;
 		token = token->next;
+		this_type->ty = INT;
 	}
 	// =====
 	Token *tok = consume_ident();
@@ -378,7 +388,6 @@ Node *primary(){
 			/* 関数名の保存*/
 			strncpy(node->token, token2->str, token2->len);
 			*(node->token+token2->len) = '\0';
-			node->len = token2->len;
 			/* 関数の定義または呼び出しの判断 */
 			token2 = token;
 			for(;!consume_moveon(")");){
@@ -397,6 +406,7 @@ Node *primary(){
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
 				if(!def_flag)	error_at(token->str, "関数の型が定義されていません.");
+				node->type->ty = this_type->ty;
 				if(!consume(")")){
 					while(1){
 						if(strncmp(token->str, "int", token->len) == 0){
@@ -448,11 +458,13 @@ Node *primary(){
 					}
 				}
 				return node;
+			/* ===== */
 			}else{
 				error_at(token->str, "関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
 			}
 		}else{
 			node->kind = ND_LVAR;
+			node->type->ty = this_type->ty;
 		}
 		LVar *lvar;
 		if(!cur_node)	error_at(token->str, "NULLに対してmake_lvarを呼び出そうとしています.");
@@ -461,6 +473,7 @@ Node *primary(){
 			node->offset = lvar->offset;
 		}else if(def_flag){
 			make_lvar(tok, node, 0);
+			node->type->ty = this_type->ty;
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}
