@@ -356,10 +356,11 @@ Node *unary(){
 		node->type->ty = PTR;
 		Type *type = node->type;
 		for(;consume("*");type = type->ptr_to){
+			type->ptr_to = calloc(1, sizeof(Type));
 			type->ptr_to->ty = PTR;
 		}
 		node->lhs = unary();
-		type->ty = node->lhs->type->ty;
+		type->ptr_to = node->lhs->type;
 		return node;
 		return new_node(ND_DEREF, unary(), NULL);
 	}else{
@@ -380,13 +381,17 @@ Node *primary(){
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
 		def_flag = 1;
 		token = token->next;
-		this_type->ty = INT;
+		Type *type = this_type;
+		for(;consume("*");type = type->ptr_to){
+			type->ptr_to = calloc(1, sizeof(Type));
+			type->ty = PTR;
+		}
+		type->ty = INT;
 	}
 	// =====
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
-		node->type = calloc(1, sizeof(Type));
 		Token *token2 = token;
 		token = token->next;
 		if(consume("(")){
@@ -411,7 +416,7 @@ Node *primary(){
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
 				if(!def_flag)	error_at(token->str, "関数の型が定義されていません.");
-				node->type->ty = this_type->ty;
+				node->type = this_type;
 				if(!consume(")")){
 					while(1){
 						if(strncmp(token->str, "int", token->len) == 0){
@@ -469,7 +474,7 @@ Node *primary(){
 			}
 		}else{
 			node->kind = ND_LVAR;
-			node->type->ty = this_type->ty;
+			node->type = this_type;
 		}
 		LVar *lvar;
 		if(!cur_node)	error_at(token->str, "NULLに対してmake_lvarを呼び出そうとしています.");
@@ -478,7 +483,7 @@ Node *primary(){
 			node->offset = lvar->offset;
 		}else if(def_flag){
 			make_lvar(tok, node, 0);
-			node->type->ty = this_type->ty;
+			node->type = this_type;
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}

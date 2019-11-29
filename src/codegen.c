@@ -14,14 +14,18 @@ void fun_params_err(){
 }
 
 void gen_lval(Node *node){
-	if(node->kind != ND_LVAR){
-		error("左辺値が変数ではありません.");
+	if(node->kind == ND_LVAR){
+		// store address of variable to stack
+		printf("\tmov\trax, rbp\n");
+		printf("\tsub\trax, %d\n", node->offset);
+		printf("\tpush\trax\n");
+		return;
 	}
-	
-	// store address of variable to stack
-	printf("\tmov\trax, rbp\n");
-	printf("\tsub\trax, %d\n", node->offset);
-	printf("\tpush\trax\n");
+	if(node->kind == ND_DEREF){
+		gen(node->lhs);
+		return;
+	}
+	error("左辺値が変数ではありません.");
 }
 
 void gen(Node *node){

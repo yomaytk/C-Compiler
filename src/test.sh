@@ -61,7 +61,7 @@ try 55 "int sum(int m, int n){ int acc = 0; for (int i = m; i <= n; i = i + 1) a
 try 3 "int main(){int x = 3;int y = &x;return *y;}"
 try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
 try 6 "int main(){ int x; x = 6; return x; }"
-
+try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
 echo -e "\e[32m=== compile_err test start ===\e[m\n"
