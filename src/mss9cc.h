@@ -77,6 +77,7 @@ typedef enum{
 } Nodekind;
 
 typedef struct Node Node;
+typedef struct Type Type;
 
 struct Node{
 	Nodekind kind;
@@ -124,8 +125,6 @@ extern Node *cur_node;
 extern Node *tmp_node;
 extern LVar *function_set_s;
 extern LVar *function_set_e;
-
-typedef struct Type Type;
 
 struct Type {
 	enum {

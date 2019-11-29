@@ -350,14 +350,18 @@ Node *unary(){
 		return new_node(ND_ADDR, unary(), NULL);
 	}else if(consume("*")){
 		Node *node = calloc(1, sizeof(Node));
+		node->kind = ND_DEREF;
+		node->rhs = NULL;
+		node->type = calloc(1, sizeof(Type));
 		node->type->ty = PTR;
 		Type *type = node->type;
 		for(;consume("*");type = type->ptr_to){
-			type->ptr_to = PTR;
+			type->ptr_to->ty = PTR;
 		}
 		node->lhs = unary();
 		type->ty = node->lhs->type->ty;
 		return node;
+		return new_node(ND_DEREF, unary(), NULL);
 	}else{
 		return primary();
 	}
@@ -382,6 +386,7 @@ Node *primary(){
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
+		node->type = calloc(1, sizeof(Type));
 		Token *token2 = token;
 		token = token->next;
 		if(consume("(")){
