@@ -4,4 +4,6 @@
 
 
 int main(){
+	char *op = "int\0";
+	
 }

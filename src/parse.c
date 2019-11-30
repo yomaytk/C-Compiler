@@ -100,7 +100,7 @@ Node *new_node_num(int val){
 }
 
 /* 現在対象のノードにLVarを追加する */
-void make_lvar(Token *tok, Node *node, int param_f){
+void make_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	LVar *lvar = calloc(1, sizeof(LVar));
 	lvar->len = tok->len;
 	lvar->name = tok->str;
@@ -117,12 +117,9 @@ void make_lvar(Token *tok, Node *node, int param_f){
 		else	cur_node->locals_cnt = 1;
 	}
 	/* スタック上の変数領域の範囲を更新 */
-	if(node){
-		if(!node->type)	error("変数に型がありません.");
-		else if(node->type->ty == INT)	cur_node->var_size += 8;
-		else if(node->type->ty == PTR)	cur_node->var_size	+= 8;
-		else if(node->type->ty == ARRAY)	cur_node->var_size += 8*node->type->array_size;	
-	}
+	if(ty == INT)	cur_node->var_size += 8;
+	else if(ty == PTR)	cur_node->var_size	+= 8;
+	else if(ty == ARRAY)	cur_node->var_size += 8*node->type->array_size;	
 	/* ===== */
 	if(node)	node->offset = lvar->offset;
 	cur_node->locals_e = lvar;
@@ -456,7 +453,7 @@ Node *primary(){
 						}
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
-						make_lvar(tok, NULL, 1);
+						make_lvar(tok, NULL, 1, node->type->ty);
 						token = token->next;
 						if(!consume(")"))	expect(',');
 						else 	break;
@@ -508,7 +505,8 @@ Node *primary(){
 			expect(']');
 			node->kind == ND_ARRAY;
 			node->type->array_size = size;
-			make_lvar(tok, node, 0);
+			node->type->ty = ARRAY;
+			make_lvar(tok, node, 0, node->type->ty);
 			return node;
 		/* 変数 */
 		}else{
@@ -521,7 +519,7 @@ Node *primary(){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
 		}else if(def_flag){
-			make_lvar(tok, node, 0);
+			make_lvar(tok, node, 0, node->type->ty);
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}

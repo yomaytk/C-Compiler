@@ -71,6 +71,12 @@ typedef struct Node Node;
 typedef struct LVar LVar;
 typedef struct Type Type;
 
+typedef enum {
+		INT,	// int
+		PTR,	// pointer
+		ARRAY,	// array
+} Ty;
+
 struct Node{
 	Nodekind kind;
 	Node *lhs;
@@ -101,14 +107,11 @@ struct LVar {
 };
 
 struct Type {
-	enum {
-		INT,	// int
-		PTR,	// pointer
-		ARRAY,	// array
-	} ty;
+	Ty ty;
 	Type *ptr_to;
 	size_t array_size;
 };
+
 
 void program();
 Node *stmt();

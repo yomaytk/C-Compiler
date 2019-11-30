@@ -155,7 +155,7 @@ void gen(Node *node){
 		if(strncmp(node->token, "main", 4) == 0){
 			main_flag = 1;
 		}
-		printf("\tsub\trsp, %d\n", (node->params_cnt + node->locals_cnt)*8);
+		printf("\tsub\trsp, %d\n", node->var_size);
 		LVar *lvar = node->locals_s;
 		for(int i = 1;i <= node->params_cnt;i++, lvar = lvar->next){
 			printf("\tmov\t[rbp-%d], %s\n", i*8, reg64_name[i-1]);
