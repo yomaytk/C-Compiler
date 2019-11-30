@@ -29,18 +29,6 @@ struct Token {
 Token *new_token(TokenKind kind, Token *cur, char *str, int len);
 Token *tokenize(char *p);
 
-typedef struct LVar LVar;
-
-struct LVar {
-	LVar *next;
-	char *name;
-	int len;
-	int offset;
-};
-
-// extern LVar *locals_s;
-// extern LVar *locals_e;
-
 int is_alnum(char c);
 void tokenize_debug(Token *tok);
 
@@ -77,6 +65,7 @@ typedef enum{
 } Nodekind;
 
 typedef struct Node Node;
+typedef struct LVar LVar;
 typedef struct Type Type;
 
 struct Node{
@@ -95,6 +84,24 @@ struct Node{
 	int locals_cnt;
 	int params_cnt;
 	Type *type;
+	Node *defnode;
+	Node *par;
+};
+
+struct LVar {
+	LVar *next;
+	char *name;
+	int len;
+	int offset;
+	Node *defnode;
+};
+
+struct Type {
+	enum {
+		INT,	// int
+		PTR,	// pointer
+	} ty;
+	Type *ptr_to;
 };
 
 void program();
@@ -126,13 +133,6 @@ extern Node *tmp_node;
 extern LVar *function_set_s;
 extern LVar *function_set_e;
 
-struct Type {
-	enum {
-		INT,	// int
-		PTR,	// pointer
-	} ty;
-	Type *ptr_to;
-};
 
 /* ~~~~~ main.c ~~~~~ */
 

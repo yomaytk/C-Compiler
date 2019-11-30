@@ -105,6 +105,7 @@ void make_lvar(Token *tok, Node *node, int param_f){
 	LVar *lvar = calloc(1, sizeof(LVar));
 	lvar->len = tok->len;
 	lvar->name = tok->str;
+	lvar->defnode = node;
 	if(cur_node->locals_e){
 		cur_node->locals_e->next = lvar;
 		lvar->offset = cur_node->locals_e->offset + 8;
@@ -351,7 +352,6 @@ Node *unary(){
 	}else if(consume("*")){
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_DEREF;
-		node->rhs = NULL;
 		node->type = calloc(1, sizeof(Type));
 		node->type->ty = PTR;
 		Type *type = node->type;
@@ -376,6 +376,7 @@ Node *primary(){
 		return node;
 	}
 	int def_flag = 0;
+	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));
 	// 型定義があるかの判定
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
@@ -387,11 +388,23 @@ Node *primary(){
 			type->ty = PTR;
 		}
 		type->ty = INT;
+		if(this_type->ty == PTR){
+			par->kind = ND_DEREF;
+			par->type = this_type;
+		}
 	}
 	// =====
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
+		/* ポインタ定義の場合は親ノードを付ける */
+		if(par->kind){
+			par->lhs = calloc(1, sizeof(Node));
+			node->par = par;
+		}
+		/* ノードの型を決める */
+		node->type = calloc(1, sizeof(Type));
+		node->type->ty = INT;
 		Token *token2 = token;
 		token = token->next;
 		if(consume("(")){
@@ -416,7 +429,6 @@ Node *primary(){
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
 				if(!def_flag)	error_at(token->str, "関数の型が定義されていません.");
-				node->type = this_type;
 				if(!consume(")")){
 					while(1){
 						if(strncmp(token->str, "int", token->len) == 0){
@@ -474,16 +486,15 @@ Node *primary(){
 			}
 		}else{
 			node->kind = ND_LVAR;
-			node->type = this_type;
 		}
 		LVar *lvar;
 		if(!cur_node)	error_at(token->str, "NULLに対してmake_lvarを呼び出そうとしています.");
 		else 	lvar = find_lvar(tok, cur_node);
 		if(lvar){
 			node->offset = lvar->offset;
+			node->defnode = lvar->defnode;
 		}else if(def_flag){
 			make_lvar(tok, node, 0);
-			node->type = this_type;
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}

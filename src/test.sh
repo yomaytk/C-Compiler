@@ -37,7 +37,8 @@ echo -e "\n\e[32m=== try test start ===\e[m\n"
 
 try 20 "int main(){ int a = 20; return a;}"
 try 10 "int main(){ return 10; }"
-try 20 "int main(){ int a = 5; int b = 4; int c = 11; return a+b+c; }"
+try 8  "int main(){ int a = 2; int b = 6; return a+b;}"
+try 60 "int main(){ int a = 5; int b = 4; int c = 13; int d = 15; int e = 23; return a+b+c+d+e; }"
 try 10 "int hoge(){ return 10; } int main(){ hoge(); }"
 try 28 "int hoge(int a){ return a+5; } int main(){ hoge(23); }"
 try 23 "int hoge1(int a) { return a; } int hoge2(int a) { return a;} int hoge3(int a){ return a;} int main(){ hoge1(10) + hoge2(7) + hoge3(6); }"
@@ -64,6 +65,7 @@ try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
 try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
+try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y+1; return *y;}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
