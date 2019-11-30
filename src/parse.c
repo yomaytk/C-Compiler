@@ -384,8 +384,8 @@ Node *primary(){
 		token = token->next;
 		Type *type = this_type;
 		for(;consume("*");type = type->ptr_to){
-			type->ptr_to = calloc(1, sizeof(Type));
 			type->ty = PTR;
+			type->ptr_to = calloc(1, sizeof(Type));
 		}
 		type->ty = INT;
 		if(this_type->ty == PTR){

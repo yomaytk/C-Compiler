@@ -191,7 +191,6 @@ void gen(Node *node){
 	if(kind == ND_ADD){					// +
 		if(node->lhs->defnode && node->lhs->defnode->par && node->lhs->defnode->par->kind == ND_DEREF){
 			Type *par_type = node->lhs->defnode->par->type;
-			// printf("ojojoojj");
 			if(par_type->ty == PTR)	printf("\timul\trdi, 8\n");
 			else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
 		}
