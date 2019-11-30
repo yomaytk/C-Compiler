@@ -68,6 +68,10 @@ try 13 "int main(){ int x = 13; int *y = &x; int **z = &y; return **z;}"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
 try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y-1; return *y;}"
 try 23 "int main(){ int w = 20; int x = 21; int y = 22; int z = 23; int *p; p = &w; p = p-3; return *p;}"
+try 8 "int main(){ int *x; sizeof(x);}"
+try 8 "int main(){ int x; sizeof(&x);}"
+try 8 "int hoge(int a){ return a;}int main(){ sizeof(hoge(10)); }"
+try 8 "int main(){ int *x; sizeof(*x);}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 

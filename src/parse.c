@@ -363,7 +363,16 @@ Node *unary(){
 		type->ptr_to = node->lhs->type;
 		return node;
 		return new_node(ND_DEREF, unary(), NULL);
-	}else{
+	}else if(consume("sizeof")){
+		Node *rhs = unary();
+		if(rhs->kind == ND_NUM || rhs->kind == ND_ADDR || rhs->kind == ND_DEREF)	return new_node_num(8);
+		else if(rhs->kind == ND_LVAR || rhs->kind == ND_APP){
+			if(!rhs->type)	error_at(token->str, "パーズで変数に型がありません.");
+			else if(rhs->type->ty == INT)	return new_node_num(8);
+			else if(rhs->type->ty == PTR)	return new_node_num(8);
+		}
+	}
+	else{
 		return primary();
 	}
 }
