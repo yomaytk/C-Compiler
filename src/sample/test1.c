@@ -1,9 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
-
-
 int main(){
-	char *op = "int\0";
-	
+	int a[10];
+	*a = 1;
+	return *a;
 }

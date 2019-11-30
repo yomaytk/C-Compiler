@@ -501,13 +501,20 @@ Node *primary(){
 			}
 		/* 配列 */
 		}else if(consume("[")){
-			int size = expect_number();
-			expect(']');
-			node->kind == ND_ARRAY;
-			node->type->array_size = size;
-			node->type->ty = ARRAY;
-			make_lvar(tok, node, 0, node->type->ty);
-			return node;
+			if(def_flag){
+				int size = expect_number();
+				expect(']');
+				par->kind == ND_DEREF;
+				par->type = calloc(1, sizeof(Type));
+				par->type->ty = PTR;
+				par->type->ptr_to = this_type;
+				node->type->array_size = size;
+				node->type->ty = ARRAY;
+				node->kind = ND_LVAR;
+				par->lhs = node;
+				make_lvar(tok, node, 0, ARRAY);
+				return node;
+			}
 		/* 変数 */
 		}else{
 			node->kind = ND_LVAR;
@@ -518,6 +525,7 @@ Node *primary(){
 		if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
+			node->type = lvar->defnode->type;
 		}else if(def_flag){
 			make_lvar(tok, node, 0, node->type->ty);
 		}else{

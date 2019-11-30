@@ -22,7 +22,8 @@ void gen_lval(Node *node){
 		return;
 	}
 	if(node->kind == ND_DEREF){
-		gen(node->lhs);
+		if(node->lhs->type->ty && node->lhs->type->ty == ARRAY)	gen_lval(node->lhs);
+		else 	gen(node->lhs);
 		return;
 	}
 	error("左辺値が変数ではありません.");
@@ -178,6 +179,7 @@ void gen(Node *node){
 			printf("\tpop\trax\n");
 			printf("\tmov\trax, [rax]\n");
 			printf("\tpush\trax\n");
+			if(!type->ptr_to)	break;
 		}
 		return;
 	}

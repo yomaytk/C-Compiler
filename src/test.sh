@@ -35,6 +35,7 @@ compile_err() {
 
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
+# basic syntax and various functions
 try 20 "int main(){ int a = 20; return a;}"
 try 10 "int main(){ return 10; }"
 try 8  "int main(){ int a = 2; int b = 6; return a+b;}"
@@ -59,6 +60,8 @@ try 55 "int fib(int n){ if(n == 0) 0; else if(n == 1) return 1; else fib(n-1)+fi
 try 5 "int main(){ int a = 3; {a = 5; return a;} }"
 try 55 "int main(){ int ans = 0; for(int i = 0;i <= 10;i = i + 1){ ans = ans + i;} return ans;}"
 try 55 "int sum(int m, int n){ int acc = 0; for (int i = m; i <= n; i = i + 1) acc = acc + i; return acc; } int main() { return sum(1, 10);}"
+
+# pointer
 try 3 "int main(){int x = 3;int y = &x;return *y;}"
 try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
 try 6 "int main(){ int x; x = 6; return x; }"
@@ -68,10 +71,16 @@ try 13 "int main(){ int x = 13; int *y = &x; int **z = &y; return **z;}"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
 try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y-1; return *y;}"
 try 23 "int main(){ int w = 20; int x = 21; int y = 22; int z = 23; int *p; p = &w; p = p-3; return *p;}"
+
+# sizeof
 try 8 "int main(){ int *x; sizeof(x);}"
 try 8 "int main(){ int x; sizeof(&x);}"
 try 8 "int hoge(int a){ return a;}int main(){ sizeof(hoge(10)); }"
 try 8 "int main(){ int *x; sizeof(*x);}"
+
+# array
+try 10 "int main(){ int a[10]; return 10;}"
+try 3 "int main(){int a[2];*a = 1;*(a + 1) = 2;int *p;p = a;return *p + *(p + 1);}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
