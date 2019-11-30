@@ -174,9 +174,11 @@ void gen(Node *node){
 
 	if(kind == ND_DEREF){
 		gen(node->lhs);
-		printf("\tpop\trax\n");
-		printf("\tmov\trax, [rax]\n");
-		printf("\tpush\trax\n");
+		for(Type *type = node->type;type->ty == PTR;type = type->ptr_to){
+			printf("\tpop\trax\n");
+			printf("\tmov\trax, [rax]\n");
+			printf("\tpush\trax\n");
+		}
 		return;
 	}
 

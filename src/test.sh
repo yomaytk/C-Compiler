@@ -62,6 +62,9 @@ try 3 "int main(){int x = 3;int y = &x;return *y;}"
 try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
 try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
+try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
+try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
+
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
 echo -e "\e[32m=== compile_err test start ===\e[m\n"

@@ -9,5 +9,9 @@ int fib(int n){
 
 
 int main(){
-	fib(10);
+	int x = 5;
+	int *y = &x;
+	int **z = &y;
+	// printf("%d", **z);
+	return **z;
 }
