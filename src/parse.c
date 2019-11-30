@@ -58,7 +58,6 @@ void expect(char op) {
 int expect_number() {
 	if (token->kind != TK_NUM)
 	error_at(token->str, "数ではありません");
-	// error(token->str);
 	int val = token->val;
 	token = token->next;
 	return val;
@@ -108,15 +107,23 @@ void make_lvar(Token *tok, Node *node, int param_f){
 	lvar->defnode = node;
 	if(cur_node->locals_e){
 		cur_node->locals_e->next = lvar;
-		lvar->offset = cur_node->locals_e->offset + 8;
+		lvar->offset = cur_node->var_size + 8;
 		if(param_f)	cur_node->params_cnt++;
 		else 	cur_node->locals_cnt++;
 	}else{
 		cur_node->locals_s = lvar;
 		lvar->offset = 8;
-		if(param_f)	cur_node->params_cnt = 1;
-		else 	cur_node->locals_cnt = 1;
+		if(param_f)cur_node->params_cnt = 1;
+		else	cur_node->locals_cnt = 1;
 	}
+	/* スタック上の変数領域の範囲を更新 */
+	if(node){
+		if(!node->type)	error("変数に型がありません.");
+		else if(node->type->ty == INT)	cur_node->var_size += 8;
+		else if(node->type->ty == PTR)	cur_node->var_size	+= 8;
+		else if(node->type->ty == ARRAY)	cur_node->var_size += 8*node->type->array_size;	
+	}
+	/* ===== */
 	if(node)	node->offset = lvar->offset;
 	cur_node->locals_e = lvar;
 	return;
@@ -414,8 +421,10 @@ Node *primary(){
 		/* ノードの型を決める */
 		node->type = calloc(1, sizeof(Type));
 		node->type->ty = INT;
+		/* ===== */
 		Token *token2 = token;
 		token = token->next;
+		/* 関数 */
 		if(consume("(")){
 			/* 関数名の保存*/
 			strncpy(node->token, token2->str, token2->len);
@@ -493,6 +502,15 @@ Node *primary(){
 			}else{
 				error_at(token->str, "関数の定義もしくは呼び出しのパースで不正なノードを検出しました.");
 			}
+		/* 配列 */
+		}else if(consume("[")){
+			int size = expect_number();
+			expect(']');
+			node->kind == ND_ARRAY;
+			node->type->array_size = size;
+			make_lvar(tok, node, 0);
+			return node;
+		/* 変数 */
 		}else{
 			node->kind = ND_LVAR;
 		}

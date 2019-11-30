@@ -1,3 +1,4 @@
+#include <stdio.h>
 #define bool _Bool
 
 /* ~~~~~ tokenize.c ~~~~~ */
@@ -58,11 +59,12 @@ typedef enum{
 	ND_WHILE,
 	ND_FOR,
 	ND_FOREXPR,		// condition of for
-	ND_BLOCK,
-	ND_APP,
+	ND_BLOCK,		// {}
+	ND_APP,			
 	ND_FUN,
-	ND_ADDR,
-	ND_DEREF,
+	ND_ADDR,		// &p
+	ND_DEREF,		// *p	
+	ND_ARRAY,		// []
 } Nodekind;
 
 typedef struct Node Node;
@@ -87,6 +89,7 @@ struct Node{
 	Type *type;
 	Node *defnode;
 	Node *par;
+	int var_size;
 };
 
 struct LVar {
@@ -101,8 +104,10 @@ struct Type {
 	enum {
 		INT,	// int
 		PTR,	// pointer
+		ARRAY,	// array
 	} ty;
 	Type *ptr_to;
+	size_t array_size;
 };
 
 void program();
