@@ -65,7 +65,8 @@ try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
 try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
-try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y+1; return *y;}"
+try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y-1; return *y;}"
+try 23 "int main(){ int w = 20; int x = 21; int y = 22; int z = 23; int *p; p = &w; p = p-3; return *p;}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
