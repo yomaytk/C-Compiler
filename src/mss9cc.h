@@ -137,6 +137,8 @@ extern Node *code[100];
 LVar *find_lvar(Token *tok, Node *node);
 char* syntax_debug(Node *code);
 
+Node *new_node_num(int val);
+
 extern Node *cur_node;
 extern Node *tmp_node;
 extern LVar *function_set_s;

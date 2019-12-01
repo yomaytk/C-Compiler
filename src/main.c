@@ -65,7 +65,8 @@ int main(int argc, char **argv) {
 	
 	// for(int i = 0;code[i];i++){
 	// 	printf("code[%d]:\n", i);
-	// 	printf("%s\n", syntax_debug(code[i]));
+	// 	char *sss = syntax_debug(code[i]);
+	// 	printf("%s\n", sss);
 	// }
 
 	if(!main_flag)	error("main関数がありません.");

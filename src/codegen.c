@@ -22,15 +22,25 @@ void gen_lval(Node *node){
 		return;
 	}
 	if(node->kind == ND_DEREF){
-		int a = 1;
-		if(node->lhs->type)	a = 2;
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->type && lhs_term->type->ty == ARRAY)	gen_lval(node->lhs);
-		else 	gen(node->lhs);
+		if(lhs_term->type && lhs_term->type->ty == ARRAY){
+			// printf("sssssss\n");
+			gen_lval(lhs_term);
+			lhs_term->kind = ND_NUM;
+			lhs_term->val = 0;
+			// printf("mmmmmmm\n");
+			if(node->lhs->rhs){
+				gen(node->lhs);
+				printf("\tpop\trdi\n");
+				printf("\tpop\trax\n");
+				printf("\timul\trdi, 8\n");
+				printf("\tadd\trax, rdi\n");
+				printf("\tpush\trax\n");
+			}
+			// printf("eeeeeee\n");
+		}else 	gen(node->lhs);
 		return;
-	}else if(node->kind == ND_SUB){
-		error("hihihh");
 	}
 	error("左辺値が変数ではありません.");
 }
@@ -185,7 +195,7 @@ void gen(Node *node){
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 		if(lhs_term->type->ty == ARRAY)	type = type->ptr_to;
-		for(;type->ty == PTR;type = type->ptr_to){
+		for(;type && type->ty == PTR;type = type->ptr_to){
 			printf("\tpop\trax\n");
 			printf("\tmov\trax, [rax]\n");
 			printf("\tpush\trax\n");

@@ -138,54 +138,42 @@ Node *find_tree_type(Node *node){
 }
 
 char* nodekind2str(Nodekind kind){
-	if(ND_ADD)	return "+";
-	else if(ND_SUB)	return "-";
-	else if(ND_MUL)	return "*";
-	else if(ND_DIV)	return "/";
-	else if(ND_NUM)	return "digit";
-	else if(ND_EQU) return "==";
-	else if(ND_NOTEQU) return "!=";
-	else if(ND_RIGHTINE) return "<";
-	else if(ND_RINEEQU) return "<=";
-	else if(ND_LEFTINE) return ">";
-	else if(ND_LINEEQU)	return ">=";
-	else if(ND_ASSIGN)	return "=";
-	else if(ND_LVAR)	return "locvar";
-	else if(ND_SEMICORO)	return ";";
-	else if(ND_RETURN)	return "return";
-	else if(ND_IF)	return "if";
-	else if(ND_ELSE)	return "else";
-	else if(ND_WHILE)	return "while";
-	else if(ND_FOR)		return "for";
-	else if(ND_FOREXPR)	return "forexpr";
-	else if(ND_BLOCK)	return "{}";
-	else if(ND_APP)	return "fun ->";
+	if(kind == ND_ADD)	return "+";
+	else if(kind == ND_SUB)	return "-";
+	else if(kind == ND_MUL)	return "*";
+	else if(kind == ND_DIV)	return "/";
+	else if(kind == ND_NUM)	return "digit";
+	else if(kind == ND_EQU) return "==";
+	else if(kind == ND_NOTEQU) return "!=";
+	else if(kind == ND_RIGHTINE) return "<";
+	else if(kind == ND_RINEEQU) return "<=";
+	else if(kind == ND_LEFTINE) return ">";
+	else if(kind == ND_LINEEQU)	return ">=";
+	else if(kind == ND_ASSIGN)	return "=";
+	else if(kind == ND_LVAR)	return "locvar";
+	else if(kind == ND_SEMICORO)	return ";";
+	else if(kind == ND_RETURN)	return "return";
+	else if(kind == ND_IF)	return "if";
+	else if(kind == ND_ELSE)	return "else";
+	else if(kind == ND_WHILE)	return "while";
+	else if(kind == ND_FOR)		return "for";
+	else if(kind == ND_FOREXPR)	return "forexpr";
+	else if(kind == ND_BLOCK)	return "{}";
+	else if(kind == ND_APP)	return "app";
+	else if(kind == ND_FUN)	return "fun";
 	else return "nodekind2str error";
 }
 
 char *syntax_debug(Node *code){
 	
-	char *str[4];
-	char *stra = calloc(1, sizeof(char*));
+	char *str[2];
+	char *stra = calloc(1, sizeof(char));
 	Nodekind kind = code->kind;
 
-	for(int i = 0;i < 4;i++)	str[i] = "NULL";
+	for(int i = 0;i < 2;i++)	str[i] = "NULL";
 	if(code->lhs)	str[0] = syntax_debug(code->lhs);
-	if(code->mhs)	str[1] = syntax_debug(code->mhs);
-	if(code->lhs)	str[2] = syntax_debug(code->lhs);
-	if(code->vector){
-		str[3] = "(";
-		while(1){
-			code = code->vector;
-			str[3] = strcat(str[3], syntax_debug(code));
-			if(code->vector)	strcat(str[3], ", ");
-			else{
-				strcat(str[3], ")");
-				break;
-			}
-		}
-	}
-	sprintf(stra, "(%s, %s, %s, %s, %s)", nodekind2str(kind), str[0], str[1], str[2], str[3]);
+	if(code->lhs)	str[1] = syntax_debug(code->lhs);
+	sprintf(stra, "(%s, %s, %s)", nodekind2str(kind), str[0], str[1]);
 	return stra;
 }
 

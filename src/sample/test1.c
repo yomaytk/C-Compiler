@@ -41,8 +41,24 @@ struct T {
 	int a;
 };
 
+char *fun(){
+
+	char *s = "world";
+	char a[10] = "hello";
+	a[1] = 'u';
+	return s;
+}
+
 int main(){
-	T *t;
-	if(t)	return 13;
-	else 	return 10;
+	// char *s = fun();
+	// printf("%s", s);
+	int a[10];
+	*(a + 1) = 4;
+	printf("%d\n", a[1]);
+	char b[10];
+	*(b + 1) = 'y';
+	printf("%c\n", b[1]);
+	int *c = calloc(1, sizeof(int));
+	*(c + 1000) = 5;
+	printf("%d\n", c[1000]);
 }
