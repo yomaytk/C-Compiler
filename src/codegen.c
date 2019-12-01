@@ -13,6 +13,21 @@ void fun_params_err(){
 	exit(1);
 }
 
+void array_ptr_cal(Node *node, Node *lhs_term){
+	gen_lval(lhs_term);
+	lhs_term->kind = ND_NUM;
+	lhs_term->val = 0;
+	if(node->lhs->rhs){
+		gen(node->lhs);
+		printf("\tpop\trdi\n");
+		printf("\tpop\trax\n");
+		printf("\timul\trdi, 8\n");
+		printf("\tadd\trax, rdi\n");
+		printf("\tpush\trax\n");
+	}
+	return;
+}
+
 void gen_lval(Node *node){
 	if(node->kind == ND_LVAR){
 		// store address of variable to stack
@@ -24,22 +39,8 @@ void gen_lval(Node *node){
 	if(node->kind == ND_DEREF){
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->type && lhs_term->type->ty == ARRAY){
-			// printf("sssssss\n");
-			gen_lval(lhs_term);
-			lhs_term->kind = ND_NUM;
-			lhs_term->val = 0;
-			// printf("mmmmmmm\n");
-			if(node->lhs->rhs){
-				gen(node->lhs);
-				printf("\tpop\trdi\n");
-				printf("\tpop\trax\n");
-				printf("\timul\trdi, 8\n");
-				printf("\tadd\trax, rdi\n");
-				printf("\tpush\trax\n");
-			}
-			// printf("eeeeeee\n");
-		}else 	gen(node->lhs);
+		if(lhs_term->type && lhs_term->type->ty == ARRAY)	array_ptr_cal(node, lhs_term);
+		else 	gen(node->lhs);
 		return;
 	}
 	error("左辺値が変数ではありません.");
@@ -54,7 +55,7 @@ void gen(Node *node){
 		return;
 	}else if(kind == ND_LVAR){
 		gen_lval(node);
-		
+		if(node->type->ty == ARRAY)	return;
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
 		printf("\tmov\trax, [rax]\n");
@@ -190,11 +191,16 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_DEREF){
-		gen(node->lhs);
 		Type *type = node->type;
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->type->ty == ARRAY)	type = type->ptr_to;
+		if(lhs_term->type->ty == ARRAY){
+			type = type->ptr_to;
+			array_ptr_cal(node, lhs_term);
+			printf("\tpop\trax\n");
+			printf("\tmov\trax, [rax]\n");
+			printf("\tpush\trax\n");
+		}else 	gen(node->lhs);
 		for(;type && type->ty == PTR;type = type->ptr_to){
 			printf("\tpop\trax\n");
 			printf("\tmov\trax, [rax]\n");

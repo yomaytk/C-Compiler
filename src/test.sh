@@ -83,8 +83,8 @@ try 80 "int main(){ int a[10]; sizeof a;}"
 
 # array
 try 10 "int main(){ int a[10]; return 10;}"
-try 3 "int main(){ int a[3]; *a = 1; *(a + 1) = 3; return *(a + 1);}"
-# try 3 "int main(){int a[2];*a = 1;*(a + 1) = 2;int *p;p = a;return *p + *(p + 1);}"
+try 3 "int main(){ int a[100]; *a = 1; *(a - 28 + 32 - 21) = 3; return *(a - 28 + 32 - 21);}"
+try 3 "int main(){int a[10];*a = 1;*(a - 1) = 2;int *p;p = a;return *p + *(p-1);}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
