@@ -126,6 +126,17 @@ void make_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	return;
 }
 
+Node *find_tree_type(Node *node){
+	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
+		|| node->kind == ND_ADDR)	return node;
+	Node *lhs, *rhs;
+	if(node->lhs)	lhs = find_tree_type(node->lhs);
+	if(node->rhs)	rhs = find_tree_type(node->rhs);
+	if(!lhs && !rhs)	return NULL;
+	else if(lhs)	return lhs;
+	else if(rhs)	return rhs;
+}
+
 char* nodekind2str(Nodekind kind){
 	if(ND_ADD)	return "+";
 	else if(ND_SUB)	return "-";
@@ -261,11 +272,10 @@ Node *stmt(){
 		return node;
 	}else{
 		node = expr();
-		if(node->kind == ND_FUN)	return node;
+		if(node->kind == ND_FUN) return node;
 	}
 	expect(';');
 	return node;
-
 }
 
 Node *expr(){
@@ -366,14 +376,18 @@ Node *unary(){
 		node->lhs = unary();
 		type->ptr_to = node->lhs->type;
 		return node;
-		return new_node(ND_DEREF, unary(), NULL);
 	}else if(consume("sizeof")){
 		Node *rhs = unary();
-		if(rhs->kind == ND_NUM || rhs->kind == ND_ADDR || rhs->kind == ND_DEREF)	return new_node_num(8);
-		else if(rhs->kind == ND_LVAR || rhs->kind == ND_APP){
-			if(!rhs->type)	error_at(token->str, "パーズで変数に型がありません.");
-			else if(rhs->type->ty == INT)	return new_node_num(8);
-			else if(rhs->type->ty == PTR)	return new_node_num(8);
+		Node *typenode = find_tree_type(rhs);
+		// typenode == NULL はND_NUMを表す
+		if(!typenode || typenode->kind == ND_ADDR || typenode->kind == ND_DEREF)	return new_node_num(8);
+		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP){
+			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
+			else if(typenode->type->ty == INT)	return new_node_num(8);
+			else if(typenode->type->ty == PTR)	return new_node_num(8);
+			else if(typenode->type->ty == ARRAY)	return new_node_num(rhs->type->array_size*8);
+		}else{
+			error_at(token->str, "構文木の型がありません.");
 		}
 	}
 	else{
@@ -525,7 +539,7 @@ Node *primary(){
 		if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
-			node->type = lvar->defnode->type;
+			if(lvar->defnode)	node->type = lvar->defnode->type;	// 関数定義の引数にはdefnodeは存在しない
 		}else if(def_flag){
 			make_lvar(tok, node, 0, node->type->ty);
 		}else{

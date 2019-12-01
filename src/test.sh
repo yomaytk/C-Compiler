@@ -36,7 +36,7 @@ compile_err() {
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
 # basic syntax and various functions
-try 20 "int main(){ int a = 20; return a;}"
+try 21 "int main(){ int a = 20; return (a+1);}"
 try 10 "int main(){ return 10; }"
 try 8  "int main(){ int a = 2; int b = 6; return a+b;}"
 try 60 "int main(){ int a = 5; int b = 4; int c = 13; int d = 15; int e = 23; return a+b+c+d+e; }"
@@ -68,19 +68,23 @@ try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
 try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
 try 13 "int main(){ int x = 13; int *y = &x; int **z = &y; return **z;}"
+try 12 "int main(){ int x = 12; return *(&x); }"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
 try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y-1; return *y;}"
 try 23 "int main(){ int w = 20; int x = 21; int y = 22; int z = 23; int *p; p = &w; p = p-3; return *p;}"
+try 20 "int main(){ int x = 11; int y = 12;int *p; p = &x; *(p - 1) = 20; return *(p - 1);}"
 
 # sizeof
-try 8 "int main(){ int *x; sizeof(x);}"
+try 8 "int main(){ int *x; sizeof (x+1+5*8);}"
 try 8 "int main(){ int x; sizeof(&x);}"
 try 8 "int hoge(int a){ return a;}int main(){ sizeof(hoge(10)); }"
-try 8 "int main(){ int *x; sizeof(*x);}"
+try 8 "int main(){ int x; sizeof(x+5*5);}"
+try 80 "int main(){ int a[10]; sizeof a;}"
 
 # array
 try 10 "int main(){ int a[10]; return 10;}"
-try 3 "int main(){int a[2];*a = 1;*(a + 1) = 2;int *p;p = a;return *p + *(p + 1);}"
+try 1 "int main(){ int a[3]; *a = 1; *(a - 1) = 3; return *a;}"
+# try 3 "int main(){int a[2];*a = 1;*(a + 1) = 2;int *p;p = a;return *p + *(p + 1);}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 

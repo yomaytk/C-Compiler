@@ -22,9 +22,15 @@ void gen_lval(Node *node){
 		return;
 	}
 	if(node->kind == ND_DEREF){
-		if(node->lhs->type->ty && node->lhs->type->ty == ARRAY)	gen_lval(node->lhs);
+		int a = 1;
+		if(node->lhs->type)	a = 2;
+		Node *lhs_term = node;
+		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+		if(lhs_term->type && lhs_term->type->ty == ARRAY)	gen_lval(node->lhs);
 		else 	gen(node->lhs);
 		return;
+	}else if(node->kind == ND_SUB){
+		error("hihihh");
 	}
 	error("左辺値が変数ではありません.");
 }
@@ -175,7 +181,11 @@ void gen(Node *node){
 
 	if(kind == ND_DEREF){
 		gen(node->lhs);
-		for(Type *type = node->type;type->ty == PTR;type = type->ptr_to){
+		Type *type = node->type;
+		Node *lhs_term = node;
+		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+		if(lhs_term->type->ty == ARRAY)	type = type->ptr_to;
+		for(;type->ty == PTR;type = type->ptr_to){
 			printf("\tpop\trax\n");
 			printf("\tmov\trax, [rax]\n");
 			printf("\tpush\trax\n");
@@ -191,15 +201,19 @@ void gen(Node *node){
 	printf("\tpop\trax\n");
 
 	if(kind == ND_ADD){					// +
-		if(node->lhs->defnode && node->lhs->defnode->par && node->lhs->defnode->par->kind == ND_DEREF){
-			Type *par_type = node->lhs->defnode->par->type;
+		Node *lhs_term = node;
+		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
+			Type *par_type = lhs_term->defnode->par->type;
 			if(par_type->ty == PTR)	printf("\timul\trdi, 8\n");
 			else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
 		}
 		printf("\tadd\trax, rdi\n");
 	}else if(kind == ND_SUB){			// -
-		if(node->lhs->defnode && node->lhs->defnode->par && node->lhs->defnode->par->kind == ND_DEREF){
-			Type *par_type = node->lhs->defnode->par->type;
+		Node *lhs_term = node;
+		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
+			Type *par_type = lhs_term->defnode->par->type;
 			if(par_type->ty == PTR)	printf("\timul\trdi, 8\n");
 			else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
 		}
