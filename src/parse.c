@@ -423,7 +423,7 @@ Node *primary(){
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
 		/* ポインタ定義の場合は親ノードを付ける */
-		if(par->kind){
+		if(par->kind == ND_DEREF){
 			par->lhs = calloc(1, sizeof(Node));
 			node->par = par;
 		}
@@ -495,7 +495,7 @@ Node *primary(){
 				}
 				if(!lvar)	error_at(token->str, "定義されていない関数の参照です.");
 				// =====
-				node->params_cnt = 0;
+				// node->params_cnt = 0;
 				if(!consume(")")){
 					while(1){
 						vec->params = expr();
@@ -528,6 +528,22 @@ Node *primary(){
 				node->par = par;
 				make_lvar(tok, node, 0, ARRAY);
 				return node;
+			}else{
+				Node *idnode = add();
+				expect(']');
+				LVar *lvar = find_lvar(tok, cur_node);
+				if(!lvar)	error_at(token->str, "配列が定義されていません.\n");
+				par->kind = ND_DEREF;
+				par->type = calloc(1, sizeof(Type));
+				par->type->ty = PTR;
+				node->type->ty = ARRAY;
+				node->kind = ND_LVAR;
+				node->offset = lvar->offset;
+				node->defnode = lvar->defnode;
+				Node *newnode = new_node(INT, ND_ADD, node, idnode);
+				par->type->ptr_to = newnode->type;
+				par->lhs = newnode;
+				return par;
 			}
 		/* 変数 */
 		}else{

@@ -86,6 +86,7 @@ try 80 "int main(){ int a[10]; sizeof a;}"
 try 10 "int main(){ int a[10]; return 10;}"
 try 3 "int main(){ int a[100]; *a = 1; *(a - 28 + 32 - 21) = 3; return *(a-17);}"
 try 6 "int main(){int a[10];*a = 1;*(a - 1) = 2; *(a - 2) = 3; int *p;p = a;return *p + *(p-1)+*(p-2);}"
+try 10 "int main(){ int a[100]; a[-1 + 6 - 20] = 10; return a[-15];}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 

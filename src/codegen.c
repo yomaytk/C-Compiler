@@ -14,8 +14,11 @@ void fun_params_err(){
 }
 
 void ptr_is8n(Node *node){
+	// 最左端のノードを見つける
 	Node *lhs_term = node;
 	while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+	// =====
+		// printf("sssss\n");
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;
 		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
@@ -24,6 +27,7 @@ void ptr_is8n(Node *node){
 			printf("\timul\trdi, 8\n");
 		}
 	}
+	return;
 }
 
 void gen_lval(Node *node){
@@ -51,6 +55,7 @@ void gen(Node *node){
 	}else if(kind == ND_LVAR){
 		gen_lval(node);
 		if(node->type->ty == ARRAY)	return;
+
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
 		printf("\tmov\trax, [rax]\n");
