@@ -13,19 +13,17 @@ void fun_params_err(){
 	exit(1);
 }
 
-void array_ptr_cal(Node *node, Node *lhs_term){
-	gen_lval(lhs_term);
-	lhs_term->kind = ND_NUM;
-	lhs_term->val = 0;
-	if(node->lhs->rhs){
-		gen(node->lhs);
-		printf("\tpop\trdi\n");
-		printf("\tpop\trax\n");
-		printf("\timul\trdi, 8\n");
-		printf("\tadd\trax, rdi\n");
-		printf("\tpush\trax\n");
+void ptr_is8n(Node *node){
+	Node *lhs_term = node;
+	while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
+		Node *defnode = lhs_term->defnode;
+		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
+		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY){
+			Type *par_type = defnode->par->type;
+			printf("\timul\trdi, 8\n");
+		}
 	}
-	return;
 }
 
 void gen_lval(Node *node){
@@ -37,10 +35,7 @@ void gen_lval(Node *node){
 		return;
 	}
 	if(node->kind == ND_DEREF){
-		Node *lhs_term = node;
-		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->type && lhs_term->type->ty == ARRAY)	array_ptr_cal(node, lhs_term);
-		else 	gen(node->lhs);
+		gen(node->lhs);
 		return;
 	}
 	error("左辺値が変数ではありません.");
@@ -185,7 +180,7 @@ void gen(Node *node){
 		return;
 	}
 
-	if(kind == ND_ADDR || kind == ND_ARRAY){
+	if(kind == ND_ADDR){
 		gen_lval(node->lhs);
 		return;
 	}
@@ -208,30 +203,10 @@ void gen(Node *node){
 	printf("\tpop\trax\n");
 
 	if(kind == ND_ADD){					// +
-		Node *lhs_term = node;
-		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
-			Node *defnode = lhs_term->defnode;
-			int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
-			if(ptr_dif > 0){
-				Type *par_type = defnode->par->type;
-				if(ptr_dif == 1)	printf("\timul\trdi, 8\n");
-				else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
-			}
-		}
+		ptr_is8n(node);
 		printf("\tadd\trax, rdi\n");
 	}else if(kind == ND_SUB){			// -
-		Node *lhs_term = node;
-		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
-			Node *defnode = lhs_term->defnode;
-			int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
-			if(ptr_dif > 0){
-				Type *par_type = defnode->par->type;
-				if(ptr_dif == 1)	printf("\timul\trdi, 8\n");
-				else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
-			}
-		}
+		ptr_is8n(node);
 		printf("\tsub\trax, rdi\n");
 	}else if(kind == ND_MUL){			// *
 		printf("\timul\trax, rdi\n");

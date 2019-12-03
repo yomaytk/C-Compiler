@@ -517,7 +517,7 @@ Node *primary(){
 			if(def_flag){
 				int size = expect_number();
 				expect(']');
-				par->kind == ND_DEREF;
+				par->kind = ND_DEREF;
 				par->type = calloc(1, sizeof(Type));
 				par->type->ty = PTR;
 				par->type->ptr_to = this_type;
@@ -525,6 +525,7 @@ Node *primary(){
 				node->type->ty = ARRAY;
 				node->kind = ND_LVAR;
 				par->lhs = node;
+				node->par = par;
 				make_lvar(tok, node, 0, ARRAY);
 				return node;
 			}
@@ -538,7 +539,10 @@ Node *primary(){
 		if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
-			if(lvar->defnode)	node->type->ty = lvar->defnode->type->ty;	// 関数定義の引数にはdefnodeは存在しない
+			if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
+				node->type->ty = lvar->defnode->type->ty;	
+				node->type->array_size = lvar->defnode->type->array_size;
+			}
 			node->type->ptr_size = 0;
 		}else if(def_flag){
 			make_lvar(tok, node, 0, node->type->ty);

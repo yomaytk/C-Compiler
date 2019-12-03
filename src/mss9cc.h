@@ -64,7 +64,6 @@ typedef enum{
 	ND_FUN,
 	ND_ADDR,		// &p
 	ND_DEREF,		// *p	
-	ND_ARRAY,		// []
 } Nodekind;
 
 typedef struct Node Node;
