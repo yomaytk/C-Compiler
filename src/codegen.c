@@ -21,7 +21,7 @@ void array_ptr_cal(Node *node, Node *lhs_term){
 		gen(node->lhs);
 		printf("\tpop\trdi\n");
 		printf("\tpop\trax\n");
-		printf("\timul\trdi, 8\n");
+		printf("\timulbbbbb\trdi, 8\n");
 		printf("\tadd\trax, rdi\n");
 		printf("\tpush\trax\n");
 	}
@@ -185,23 +185,14 @@ void gen(Node *node){
 		return;
 	}
 
-	if(kind == ND_ADDR){
+	if(kind == ND_ADDR || kind == ND_ARRAY){
 		gen_lval(node->lhs);
 		return;
 	}
 
 	if(kind == ND_DEREF){
-		Type *type = node->type;
-		Node *lhs_term = node;
-		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
-		if(lhs_term->type->ty == ARRAY){
-			type = type->ptr_to;
-			array_ptr_cal(node, lhs_term);
-			printf("\tpop\trax\n");
-			printf("\tmov\trax, [rax]\n");
-			printf("\tpush\trax\n");
-		}else 	gen(node->lhs);
-		for(;type && type->ty == PTR;type = type->ptr_to){
+		gen(node->lhs);
+		for(Type *type = node->type;type && type->ty == PTR;type = type->ptr_to){
 			printf("\tpop\trax\n");
 			printf("\tmov\trax, [rax]\n");
 			printf("\tpush\trax\n");
@@ -221,8 +212,8 @@ void gen(Node *node){
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 			Type *par_type = lhs_term->defnode->par->type;
-			if(par_type->ty == PTR)	printf("\timul\trdi, 8\n");
-			else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
+			if(par_type->ty == PTR)	printf("\timulooooo\trdi, 8\n");
+			else if(par_type->ty == INT)	printf("\timullllll\trdi, 8\n");
 		}
 		printf("\tadd\trax, rdi\n");
 	}else if(kind == ND_SUB){			// -
@@ -230,8 +221,8 @@ void gen(Node *node){
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 			Type *par_type = lhs_term->defnode->par->type;
-			if(par_type->ty == PTR)	printf("\timul\trdi, 8\n");
-			else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
+			if(par_type->ty == PTR)	printf("\timulffffff\trdi, 8\n");
+			else if(par_type->ty == INT)	printf("\timullllll\trdi, 8\n");
 		}
 		printf("\tsub\trax, rdi\n");
 	}else if(kind == ND_MUL){			// *
