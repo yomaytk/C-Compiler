@@ -357,12 +357,15 @@ Node *unary(){
 		node->type = calloc(1, sizeof(Type));
 		node->type->ty = PTR;
 		Type *type = node->type;
+		int ptr_size = 1;
 		for(;consume("*");type = type->ptr_to){
 			type->ptr_to = calloc(1, sizeof(Type));
 			type->ptr_to->ty = PTR;
+			ptr_size++;
 		}
 		node->lhs = unary();
 		type->ptr_to = node->lhs->type;
+		node->lhs->type->ptr_size = ptr_size;
 		return node;
 	}else if(consume("sizeof")){
 		Node *rhs = unary();
@@ -393,6 +396,7 @@ Node *primary(){
 	int def_flag = 0;
 	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));
+	int ptr_size = 0;
 	// 型定義があるかの判定
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
 		def_flag = 1;
@@ -401,6 +405,7 @@ Node *primary(){
 		for(;consume("*");type = type->ptr_to){
 			type->ty = PTR;
 			type->ptr_to = calloc(1, sizeof(Type));
+			ptr_size++;
 		}
 		type->ty = INT;
 		if(this_type->ty == PTR){
@@ -420,6 +425,7 @@ Node *primary(){
 		/* ノードの型を決める */
 		node->type = calloc(1, sizeof(Type));
 		node->type->ty = INT;
+		node->type->ptr_size = ptr_size;
 		/* ===== */
 		Token *token2 = token;
 		token = token->next;

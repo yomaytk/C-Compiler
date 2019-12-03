@@ -110,6 +110,7 @@ struct Type {
 	Ty ty;
 	Type *ptr_to;
 	size_t array_size;
+	size_t ptr_size;
 };
 
 

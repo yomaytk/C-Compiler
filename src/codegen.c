@@ -21,7 +21,7 @@ void array_ptr_cal(Node *node, Node *lhs_term){
 		gen(node->lhs);
 		printf("\tpop\trdi\n");
 		printf("\tpop\trax\n");
-		printf("\timulbbbbb\trdi, 8\n");
+		printf("\timul\trdi, 8\n");
 		printf("\tadd\trax, rdi\n");
 		printf("\tpush\trax\n");
 	}
@@ -211,18 +211,26 @@ void gen(Node *node){
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
-			Type *par_type = lhs_term->defnode->par->type;
-			if(par_type->ty == PTR)	printf("\timulooooo\trdi, 8\n");
-			else if(par_type->ty == INT)	printf("\timullllll\trdi, 8\n");
+			Node *defnode = lhs_term->defnode;
+			int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
+			if(ptr_dif > 0){
+				Type *par_type = defnode->par->type;
+				if(ptr_dif == 1)	printf("\timul\trdi, 8\n");
+				else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
+			}
 		}
 		printf("\tadd\trax, rdi\n");
 	}else if(kind == ND_SUB){			// -
 		Node *lhs_term = node;
 		while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 		if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
-			Type *par_type = lhs_term->defnode->par->type;
-			if(par_type->ty == PTR)	printf("\timulffffff\trdi, 8\n");
-			else if(par_type->ty == INT)	printf("\timullllll\trdi, 8\n");
+			Node *defnode = lhs_term->defnode;
+			int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
+			if(ptr_dif > 0){
+				Type *par_type = defnode->par->type;
+				if(ptr_dif == 1)	printf("\timul\trdi, 8\n");
+				else if(par_type->ty == INT)	printf("\timul\trdi, 8\n");
+			}
 		}
 		printf("\tsub\trax, rdi\n");
 	}else if(kind == ND_MUL){			// *
