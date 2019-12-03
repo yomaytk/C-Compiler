@@ -84,11 +84,13 @@ LVar *find_lvar(Token *tok, Node *node){
 	make parser tree
 */
 
-Node *new_node(Nodekind kind, Node *lhs, Node *rhs){
+Node *new_node(Ty ty, Nodekind kind, Node *lhs, Node *rhs){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = kind;
 	node->lhs = lhs;
 	node->rhs = rhs;
+	node->type = calloc(1, sizeof(Type));
+	node->type->ty = ty;
 	return node;
 }
 
@@ -96,6 +98,8 @@ Node *new_node_num(int val){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = ND_NUM;
 	node->val = val;
+	node->type = calloc(1, sizeof(Type));
+	node->type->ty = INT;
 	return node;
 }
 
@@ -274,7 +278,8 @@ Node *assign(){
 
 	Node *node = equarity();
 	if(consume("=")){
-		node = new_node(ND_ASSIGN, node, equarity());
+		Node *equ = equarity();
+		node = new_node(equ->type->ty, ND_ASSIGN, node, equ);
 	}
 	return node;
 
@@ -286,9 +291,9 @@ Node *equarity(){
 
 	for(;;){
 		if(consume("==")){
-			node = new_node(ND_EQU, node, relational());
+			node = new_node(INT, ND_EQU, node, relational());
 		}else if(consume("!=")){
-			node = new_node(ND_NOTEQU, node, relational());
+			node = new_node(INT, ND_NOTEQU, node, relational());
 		}else{
 			return node;
 		}
@@ -301,13 +306,13 @@ Node *relational(){
 
 	for(;;){
 		if(consume("<")){
-			node = new_node(ND_RIGHTINE, node, add());
+			node = new_node(INT, ND_RIGHTINE, node, add());
 		}else if(consume("<=")){
-			node = new_node(ND_RINEEQU, node, add());
+			node = new_node(INT, ND_RINEEQU, node, add());
 		}else if(consume(">")){
-			node = new_node(ND_LEFTINE, node, add());
+			node = new_node(INT, ND_LEFTINE, node, add());
 		}else if(consume(">=")){
-			node = new_node(ND_LINEEQU, node, add());
+			node = new_node(INT, ND_LINEEQU, node, add());
 		}else{
 			return node;
 		}
@@ -320,9 +325,9 @@ Node *add(){
 
 	for(;;){
 		if(consume("+")){
-			node = new_node(ND_ADD, node, mul());
+			node = new_node(INT, ND_ADD, node, mul());
 		}else if(consume("-")){
-			node = new_node(ND_SUB, node, mul());
+			node = new_node(INT, ND_SUB, node, mul());
 		}else{
 			return node;
 		}
@@ -335,9 +340,9 @@ Node *mul(){
 
 	for(;;){
 		if(consume("*")){
-			node = new_node(ND_MUL, node, unary());
+			node = new_node(INT, ND_MUL, node, unary());
 		}else if(consume("/")){
-			node = new_node(ND_DIV, node, unary());
+			node = new_node(INT, ND_DIV, node, unary());
 		}else{
 			return node;
 		}
@@ -348,9 +353,9 @@ Node *unary(){
 	if(consume("+")){
 		return primary();
 	}else if(consume("-")){
-		return new_node(ND_SUB, new_node_num(0), primary());
+		return new_node(INT, ND_SUB, new_node_num(0), primary());
 	}else if(consume("&")){
-		return new_node(ND_ADDR, unary(), NULL);
+		return new_node(INT, ND_ADDR, unary(), NULL);
 	}else if(consume("*")){
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_DEREF;
@@ -533,7 +538,8 @@ Node *primary(){
 		if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
-			if(lvar->defnode)	node->type = lvar->defnode->type;	// 関数定義の引数にはdefnodeは存在しない
+			if(lvar->defnode)	node->type->ty = lvar->defnode->type->ty;	// 関数定義の引数にはdefnodeは存在しない
+			node->type->ptr_size = 0;
 		}else if(def_flag){
 			make_lvar(tok, node, 0, node->type->ty);
 		}else{

@@ -70,10 +70,10 @@ try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
 try 13 "int main(){ int x = 13; int *y = &x; int **z = &y; return **z;}"
 try 12 "int main(){ int x = 12; return *(&x); }"
 try 7 "int main(){ int w; int *x; int **y; int ***z; w = 7; x = &w; y = &x; z = &y; return ***z;}"
-try 12 "int main(){ int w = 13; int x = 12; int *y; int *z; y = &w; z = &x; y = y-1; return *y;}"
+try 12 "int main(){ int w = 13; int x = 12; int *y; y = &w; y = y-1; return *y;}"
 # try 45 "int main(){ int w = 20; int x = 21; int y = 22; int z = 23; int *p; p = &w; p = p-3; return *p + *(p + 1);}"
 try 20 "int main(){ int x = 11; int y = 12;int *p; p = &x; *(p - 1) = 20; return *(p - 1);}"
-try 7 "int main(){ int x = 8; int *y; y = &x; return *y - 1;}"
+try 13 "int main(){ int x = 8; int *y; y = &x; return *y - 1 + 2*3;}"
 
 # sizeof
 try 8 "int main(){ int *x; sizeof (x+1+5*8);}"
