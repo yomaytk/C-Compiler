@@ -9,6 +9,9 @@
 LVar *function_set_s = NULL;
 LVar *function_set_e = NULL;
 
+LVar *globals_s = NULL;
+LVar *globals_e = NULL;
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
@@ -67,23 +70,6 @@ bool at_eof() {
 	return token->kind == TK_EOF;
 }
 
-LVar *find_lvar(Token *tok, Node *node){
-	
-	LVar *locals_ss;
-
-	locals_ss = node->locals_s;
-	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
-		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
-			return lvar;
-		}
-	}
-	return NULL;
-}
-
-/*
-	make parser tree
-*/
-
 Node *new_node(Ty ty, Nodekind kind, Node *lhs, Node *rhs){
 	Node *node = calloc(1, sizeof(Node));
 	node->kind = kind;
@@ -103,8 +89,8 @@ Node *new_node_num(int val){
 	return node;
 }
 
-/* 現在対象のノードにLVarを追加する */
-void make_lvar(Token *tok, Node *node, int param_f, Ty ty){
+/* 現在対象の環境にLVarを追加する */
+void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	LVar *lvar = calloc(1, sizeof(LVar));
 	lvar->len = tok->len;
 	lvar->name = tok->str;
@@ -123,6 +109,33 @@ void make_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	lvar->offset = cur_node->var_size;
 	if(node)	node->offset = lvar->offset;
 	cur_node->locals_e = lvar;
+	return;
+}
+
+/* 現在対象の環境のローカル変数に存在するか判定 */
+LVar *find_lvar(Token *tok, Node *node){
+	
+	LVar *locals_ss;
+
+	locals_ss = node->locals_s;
+	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
+		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
+			return lvar;
+		}
+	}
+	return NULL;
+}
+
+void add_gblvar(Token *tok, Node *node){
+	LVar *lvar = calloc(1, sizeof(LVar));
+	lvar->len = tok->len;
+	lvar->name = tok->str;
+	lvar->defnode = node;
+	// 変数が一つ目かそうでないか
+	if(globals_s)	globals_e->next = lvar;
+	else 	globals_s = lvar;
+	// =====
+	globals_e = lvar;
 	return;
 }
 
@@ -462,7 +475,7 @@ Node *primary(){
 						}
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
-						make_lvar(tok, NULL, 1, node->type->ty);
+						add_lvar(tok, NULL, 1, node->type->ty);
 						token = token->next;
 						if(!consume(")"))	expect(',');
 						else 	break;
@@ -480,6 +493,8 @@ Node *primary(){
 				}
 				/* ブロック内の処理 */
 				node->lhs = stmt();
+				// 環境はグローバルに変更
+				cur_node = NULL;
 				return node;
 			/* 関数適用の場合 */
 			}else if(node->kind == ND_APP){
@@ -522,18 +537,24 @@ Node *primary(){
 				node->kind = ND_LVAR;
 				par->lhs = node;
 				node->par = par;
-				make_lvar(tok, node, 0, ARRAY);
+				add_lvar(tok, node, 0, ARRAY);
 				return node;
 			}else{
 				Node *idnode = add();
 				expect(']');
-				LVar *lvar = find_lvar(tok, cur_node);
-				if(!lvar)	error_at(token->str, "配列が定義されていません.\n");
+				LVar *lvar;
+				node->kind = ND_LVAR;
+				// ローカルorグローバル変数にあるか判定
+				lvar = find_lvar(tok, cur_node);
+				if(!lvar)	{
+					lvar = find_gblvar(tok, node);
+					// node->kind = ND_GBLVAR;
+				}else	error_at(tok->str, "変数が定義されていません.");
+				// =====
 				par->kind = ND_DEREF;
 				par->type = calloc(1, sizeof(Type));
 				par->type->ty = PTR;
 				node->type->ty = ARRAY;
-				node->kind = ND_LVAR;
 				node->offset = lvar->offset;
 				node->defnode = lvar->defnode;
 				Node *newnode = new_node(INT, ND_ADD, node, idnode);
@@ -543,21 +564,32 @@ Node *primary(){
 			}
 		/* 変数 */
 		}else{
-			node->kind = ND_LVAR;
+			node->kind = ND_LVAR;	// 多分いらない
 		}
 		LVar *lvar;
-		if(!cur_node)	error_at(token->str, "NULLに対してmake_lvarを呼び出そうとしています.");
-		else 	lvar = find_lvar(tok, cur_node);
-		if(lvar){
+		if(!cur_node){
+			if(def_flag){
+				add_gblvar(tok, node);
+			}else{
+				error_at(tok->str, "グローバル環境で変数の参照はできません.\n");
+			}
+		}else{
+			lvar = find_lvar(tok, cur_node);
+			node->kind = ND_LVAR;
+		} 	
+		if(!lvar)	{
+			lvar = find_gblvar(tok, node);
+			node->kind = ND_GBLVAR;
+		}if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
 			if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
 				node->type->ty = lvar->defnode->type->ty;	
 				node->type->array_size = lvar->defnode->type->array_size;
 			}
-			node->type->ptr_size = 0;
+			node->type->ptr_size = 0;	// 多分いらない
 		}else if(def_flag){
-			make_lvar(tok, node, 0, node->type->ty);
+			add_lvar(tok, node, 0, node->type->ty);
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}

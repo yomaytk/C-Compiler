@@ -17,7 +17,6 @@ char *user_input;
 int label_cnt = 0;
 
 Node *cur_node;
-Node *tmp_node;
 
 int main_flag = 0;
 

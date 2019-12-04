@@ -64,6 +64,7 @@ typedef enum{
 	ND_FUN,
 	ND_ADDR,		// &p
 	ND_DEREF,		// *p	
+	ND_GBLVAR,		// global variable
 } Nodekind;
 
 typedef struct Node Node;
@@ -140,10 +141,10 @@ char* syntax_debug(Node *code);
 Node *new_node_num(int val);
 
 extern Node *cur_node;
-extern Node *tmp_node;
 extern LVar *function_set_s;
 extern LVar *function_set_e;
-
+extern LVar *globals_s;
+extern LVar *globals_e;
 
 /* ~~~~~ main.c ~~~~~ */
 
