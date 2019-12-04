@@ -89,7 +89,7 @@ Node *new_node_num(int val){
 	return node;
 }
 
-/* 現在対象の環境にLVarを追加する */
+/* 現在対象の環境にLVarを追加 */
 void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	LVar *lvar = calloc(1, sizeof(LVar));
 	lvar->len = tok->len;
@@ -112,20 +112,7 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	return;
 }
 
-/* 現在対象の環境のローカル変数に存在するか判定 */
-LVar *find_lvar(Token *tok, Node *node){
-	
-	LVar *locals_ss;
-
-	locals_ss = node->locals_s;
-	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
-		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
-			return lvar;
-		}
-	}
-	return NULL;
-}
-
+/* グローバル環境にLVarを追加 */
 void add_gblvar(Token *tok, Node *node){
 	LVar *lvar = calloc(1, sizeof(LVar));
 	lvar->len = tok->len;
@@ -138,6 +125,31 @@ void add_gblvar(Token *tok, Node *node){
 	globals_e = lvar;
 	return;
 }
+
+/* 現在対象の環境から対象の変数を返す */
+LVar *find_lvar(Token *tok, Node *node){
+	
+	LVar *locals_ss = node->locals_s;			// 修正の余地
+
+	for(LVar *lvar = locals_ss;lvar;lvar = lvar->next){
+		if(lvar->len == tok->len && memcmp(tok->str, lvar->name, lvar->len) == 0){
+			return lvar;
+		}
+	}
+	return NULL;
+}
+
+/* グローバル環境から対象の変数を返す */
+LVar *find_gblvar(Token *tok){
+	
+	for(LVar *gblvar = globals_s;gblvar;gblvar = gblvar->next){
+		if(gblvar->len == tok->len && memcmp(tok->str, gblvar->name, gblvar->len) == 0){
+			return gblvar;
+		}
+	}
+	return NULL;
+}
+
 
 Node *find_tree_type(Node *node){
 	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
@@ -547,9 +559,10 @@ Node *primary(){
 				// ローカルorグローバル変数にあるか判定
 				lvar = find_lvar(tok, cur_node);
 				if(!lvar)	{
-					lvar = find_gblvar(tok, node);
-					// node->kind = ND_GBLVAR;
-				}else	error_at(tok->str, "変数が定義されていません.");
+					lvar = find_gblvar(tok);
+					node->kind = ND_GBLVAR;
+				}
+				if(!lvar)	error_at(tok->str, "変数が定義されていません.");
 				// =====
 				par->kind = ND_DEREF;
 				par->type = calloc(1, sizeof(Type));
@@ -570,17 +583,30 @@ Node *primary(){
 		if(!cur_node){
 			if(def_flag){
 				add_gblvar(tok, node);
+				node->kind = ND_GBLVAR;
+				return node;
 			}else{
 				error_at(tok->str, "グローバル環境で変数の参照はできません.\n");
 			}
 		}else{
 			lvar = find_lvar(tok, cur_node);
 			node->kind = ND_LVAR;
-		} 	
-		if(!lvar)	{
-			lvar = find_gblvar(tok, node);
+		}
+		// ローカルでの変数定義のとき
+		if(def_flag){
+			if(!lvar){
+				add_lvar(tok, node, 0, node->type->ty);
+				return node;
+			}else{
+				error_at(tok->str, "変数の多重定義です.\n");
+			}
+		}
+		// =====
+		if(!lvar){
+			lvar = find_gblvar(tok);
 			node->kind = ND_GBLVAR;
-		}if(lvar){
+		}
+		if(lvar){
 			node->offset = lvar->offset;
 			node->defnode = lvar->defnode;
 			if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
@@ -588,12 +614,10 @@ Node *primary(){
 				node->type->array_size = lvar->defnode->type->array_size;
 			}
 			node->type->ptr_size = 0;	// 多分いらない
-		}else if(def_flag){
-			add_lvar(tok, node, 0, node->type->ty);
+			return node;
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
 		}
-		return node;
 	}else if(def_flag){
 		error_at(token->str, "変数以外に型はつけられません.");
 	}
