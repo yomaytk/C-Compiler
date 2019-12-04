@@ -18,7 +18,6 @@ void ptr_is8n(Node *node){
 	Node *lhs_term = node;
 	while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
 	// =====
-		// printf("sssss\n");
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;
 		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;

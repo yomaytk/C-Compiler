@@ -109,22 +109,18 @@ void make_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	lvar->len = tok->len;
 	lvar->name = tok->str;
 	lvar->defnode = node;
-	if(cur_node->locals_e){
-		cur_node->locals_e->next = lvar;
-		lvar->offset = cur_node->var_size + 8;
-		if(param_f)	cur_node->params_cnt++;
-		else 	cur_node->locals_cnt++;
-	}else{
-		cur_node->locals_s = lvar;
-		lvar->offset = 8;
-		if(param_f)cur_node->params_cnt = 1;
-		else	cur_node->locals_cnt = 1;
-	}
-	/* スタック上の変数領域の範囲を更新 */
+	// 変数が一つ目かそうでないか
+	if(cur_node->locals_e)	cur_node->locals_e->next = lvar;
+	else	cur_node->locals_s = lvar;
+	// 仮引数の変数かどうか
+	if(param_f)	cur_node->params_cnt++;
+	else 	cur_node->locals_cnt++;
+	// スタック上の変数領域の範囲を更新
 	if(ty == INT)	cur_node->var_size += 8;
 	else if(ty == PTR)	cur_node->var_size	+= 8;
 	else if(ty == ARRAY)	cur_node->var_size += 8*node->type->array_size;	
-	/* ===== */
+	// =====
+	lvar->offset = cur_node->var_size;
 	if(node)	node->offset = lvar->offset;
 	cur_node->locals_e = lvar;
 	return;
