@@ -86,7 +86,7 @@ struct Node{
 	Node *params;
 	int val;
 	int offset;
-	char token[100];
+	char varname[100];
 	int labelcnt[100];
 	LVar *locals_s;
 	LVar *locals_e;

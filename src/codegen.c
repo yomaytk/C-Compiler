@@ -160,16 +160,16 @@ void gen(Node *node){
 		for(int i = paramscnt;i >= 1;i--){
 			printf("\tpop\t%s\n", reg64_name[i-1]);
 		}
-		printf("\tcall\t%s\n", node->token);
+		printf("\tcall\t%s\n", node->varname);
 		printf("\tpush\trax\n");
 		return;
 	}
 
 	if(kind == ND_FUN){
-		printf("%s:\n", node->token);
+		printf("%s:\n", node->varname);
 		printf("\tpush\trbp\n");
 		printf("\tmov\trbp, rsp\n");
-		if(strncmp(node->token, "main", 4) == 0){
+		if(strncmp(node->varname, "main", 4) == 0){
 			main_flag = 1;
 		}
 		printf("\tsub\trsp, %d\n", node->var_size);
@@ -198,6 +198,23 @@ void gen(Node *node){
 			if(!type->ptr_to)	break;
 		}
 		return;
+	}
+
+	if(kind == ND_GBLVAR){
+		// 変数定義のとき
+		if(!node->defnode){
+			printf("%s:\n", node->varname);
+			if(node->type->ty == INT)	printf("\t.zero 8\n");
+			else if(node->type->ty == ARRAY)	printf("\t.zero %d\n", node->type->array_size*8);
+			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
+		// 変数利用のとき
+		}else{
+			if(node->type->ty == INT)	printf("\tmov\trax, %s[rip]\n", node->varname);
+			else if(node->type->ty == ARRAY){
+				
+				// printf("\tmov\trax, %s[rip+%d]", node->varname, nod)
+			}
+		}
 	}
 
 	gen(node->lhs);

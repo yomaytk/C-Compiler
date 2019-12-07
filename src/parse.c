@@ -455,11 +455,11 @@ Node *primary(){
 		/* ===== */
 		Token *token2 = token;
 		token = token->next;
+		/* 変数名の保存*/
+		strncpy(node->varname, token2->str, token2->len);
+		*(node->varname+token2->len) = '\0';
 		/* 関数 */
 		if(consume("(")){
-			/* 関数名の保存*/
-			strncpy(node->token, token2->str, token2->len);
-			*(node->token+token2->len) = '\0';
 			/* 関数の定義または呼び出しの判断 */
 			token2 = token;
 			for(;!consume_moveon(")");){
@@ -560,7 +560,7 @@ Node *primary(){
 				lvar = find_lvar(tok, cur_node);
 				if(!lvar)	{
 					lvar = find_gblvar(tok);
-					node->kind = ND_GBLVAR;
+					if(lvar)	node->kind = ND_GBLVAR;
 				}
 				if(!lvar)	error_at(tok->str, "変数が定義されていません.");
 				// =====
@@ -576,8 +576,6 @@ Node *primary(){
 				return par;
 			}
 		/* 変数 */
-		}else{
-			node->kind = ND_LVAR;	// 多分いらない
 		}
 		LVar *lvar;
 		if(!cur_node){
@@ -604,7 +602,7 @@ Node *primary(){
 		// =====
 		if(!lvar){
 			lvar = find_gblvar(tok);
-			node->kind = ND_GBLVAR;
+			if(lvar)	node->kind = ND_GBLVAR;
 		}
 		if(lvar){
 			node->offset = lvar->offset;
@@ -613,7 +611,6 @@ Node *primary(){
 				node->type->ty = lvar->defnode->type->ty;	
 				node->type->array_size = lvar->defnode->type->array_size;
 			}
-			node->type->ptr_size = 0;	// 多分いらない
 			return node;
 		}else{
 			error_at(token->str, "定義されていない変数の参照です.");
@@ -621,6 +618,5 @@ Node *primary(){
 	}else if(def_flag){
 		error_at(token->str, "変数以外に型はつけられません.");
 	}
-	
 	return new_node_num(expect_number());
 }
