@@ -4,7 +4,7 @@ try() {
 	input="$2"
 
 	./mss9cc "$input" > compile1.s
-	gcc -o compile compile1.s
+	gcc -static -o compile compile1.s
 	./compile
 	actual="$?"
 
@@ -45,7 +45,7 @@ try 28 "int hoge(int a){ return a+5; } int main(){ hoge(23); }"
 try 23 "int hoge1(int a) { return a; } int hoge2(int a) { return a;} int hoge3(int a){ return a;} int main(){ hoge1(10) + hoge2(7) + hoge3(6); }"
 try 24 "int hoge(int a, int b){ return a+b; } int main(){ hoge(17, 7); }"
 try 22 "int hoge(int a, int b, int c, int d){ a+b+c+d; } int main(){ return hoge(5, 5, 10, 2); }"
-try 20 "int hoge(int a, int b, int c){ a+b+c; } int main(){ return hoge(5, 5, 10); }"
+try 20 "int hoge(int a, int b, int c){ a+b+c; } int main(){ int a = 5; return hoge(a, 5, 10); }"
 try 71 "int hoge(int a, int b){ return a+b; } int main(){ hoge(5, 66); }"
 try 23 "int main(){if (3 > 2) 23; else 33;}"
 try 23 "int main(){int a = 10; int b = 23; if(a+b+5 == 38) return 23;}"

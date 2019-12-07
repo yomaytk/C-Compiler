@@ -1,4 +1,6 @@
 .intel_syntax noprefix
+.bss
+.text
 .global main
 
 main:
