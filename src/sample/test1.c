@@ -1,8 +1,18 @@
-int y[20];
-int main(){
-	y[0] = 5;
-	y[12] = 7;
-	int a = y[0];
-	int b = y[12];
-	return a + b;
+#include<stdio.h>
+#include<stdlib.h>
+
+int ary[2]; 
+
+struct Sss{
+	int a;
+	int b;
+	struct Sss *sss;
+};
+
+int main(){ 
+	*ary=1; 
+	*(ary+1)=2; 
+	struct Sss *sss = calloc(1, sizeof(struct Sss));
+	if(sss)	printf("hello!");
+	return *ary + *(ary+1);
 }

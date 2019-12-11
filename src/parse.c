@@ -560,9 +560,9 @@ Node *primary(){
 				Node *idnode = add();
 				expect(']');
 				LVar *lvar;
-				node->kind = ND_LVAR;
 				// ローカルorグローバル変数にあるか判定
 				lvar = find_lvar(tok, cur_node);
+				if(lvar)	node->kind = ND_LVAR;
 				if(!lvar)	{
 					lvar = find_gblvar(tok);
 					if(lvar)	node->kind = ND_GBLVAR;
@@ -580,9 +580,10 @@ Node *primary(){
 				par->lhs = newnode;
 				return par;
 			}
-		/* 変数 */
 		}
+		// 変数
 		LVar *lvar;
+		// グローバル環境のとき
 		if(!cur_node){
 			if(def_flag){
 				add_gblvar(tok, node);
@@ -593,12 +594,13 @@ Node *primary(){
 			}
 		}else{
 			lvar = find_lvar(tok, cur_node);
-			node->kind = ND_LVAR;
+			if(lvar)	node->kind = ND_LVAR;
 		}
 		// ローカルでの変数定義のとき
 		if(def_flag){
 			if(!lvar){
 				add_lvar(tok, node, 0, node->type->ty);
+				node->kind = ND_LVAR;
 				return node;
 			}else{
 				error_at(tok->str, "変数の多重定義です.\n");
