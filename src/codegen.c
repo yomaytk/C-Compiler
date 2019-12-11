@@ -16,7 +16,10 @@ void fun_params_err(){
 void ptr_is8n(Node *node){
 	// 最左端のノードを見つける
 	Node *lhs_term = node;
-	while(lhs_term->lhs)	lhs_term = lhs_term->lhs;
+	while(lhs_term->lhs)	{
+		lhs_term = lhs_term->lhs;
+		if(lhs_term->kind == ND_DEREF)	return;
+	}
 	// =====
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;

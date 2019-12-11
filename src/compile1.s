@@ -61,7 +61,6 @@ main:
 	push	rax
 	pop	rdi
 	pop	rax
-	imul	rdi, 8
 	add	rax, rdi
 	push	rax
 	pop	rax

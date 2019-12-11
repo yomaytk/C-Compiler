@@ -83,10 +83,12 @@ try 8 "int main(){ int x; sizeof(x+5*5);}"
 try 80 "int main(){ int a[10]; sizeof a;}"
 
 # array
-try 10 "int main(){ int a[10]; return 10;}"
-try 3 "int main(){ int a[100]; *a = 1; *(a + 28 - 32 + 21) = 3; return *(a+17);}"
+try 3 "int main(){ int a[10]; a[3] = 3; return a[3];}"
+try 17 "int main(){ int a[10]; a[3] = 3; a[4] = 4; a[5] = 5; return a[3] + a[4] + 3 + a[5] + 2;}"
+try 4 "int main(){ int a[100]; *a = 1; *(a + 28 - 32 + 21) = 3; return a[17] + a[0];}"
 try 6 "int main(){int a[10];*a = 1;*(a + 1) = 2; *(a + 2) = 3; int *p;p = a;return *p + *(p+1)+*(p+2);}"
 try 10 "int main(){ int a[100]; a[1 - 6 + 20] = 10; return a[15];}"
+try 13 "int main(){ int a[10]; a[3] = 4; a[4] = 9; return *(a+3)+*(a+4);}"
 
 #global variable
 try 8 "int a; int b[100]; int main(){a = 4; b[5] = 4; return a + b[5];}"

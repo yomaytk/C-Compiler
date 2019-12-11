@@ -390,6 +390,12 @@ Node *unary(){
 			ptr_size++;
 		}
 		node->lhs = unary();
+		// if(node->lhs->kind == ND_DEREF){
+		// 	// type->ptr_to = calloc(1, sizeof(Type));
+		// 	// type->ptr_to->ty = PTR;
+		// 	// ptr_size++;
+		// 	node->lhs = node->lhs->lhs;
+		// }
 		type->ptr_to = node->lhs->type;
 		node->lhs->type->ptr_size = ptr_size;
 		return node;
