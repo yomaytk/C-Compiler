@@ -153,7 +153,7 @@ LVar *find_gblvar(Token *tok){
 
 Node *find_tree_type(Node *node){
 	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
-		|| node->kind == ND_ADDR)	return node;
+		|| node->kind == ND_ADDR || node->kind == ND_GBLVAR)	return node;
 	Node *lhs, *rhs;
 	if(node->lhs)	lhs = find_tree_type(node->lhs);
 	if(node->rhs)	rhs = find_tree_type(node->rhs);
@@ -404,7 +404,7 @@ Node *unary(){
 		Node *typenode = find_tree_type(rhs);
 		// typenode == NULL はND_NUMを表す
 		if(!typenode || typenode->kind == ND_ADDR || typenode->kind == ND_DEREF)	return new_node_num(8);
-		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP){
+		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP || typenode->kind == ND_GBLVAR){
 			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
 			else if(typenode->type->ty == INT)	return new_node_num(8);
 			else if(typenode->type->ty == PTR)	return new_node_num(8);

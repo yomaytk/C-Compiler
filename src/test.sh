@@ -85,7 +85,7 @@ try 80 "int main(){ int a[10]; sizeof a;}"
 # array
 try 3 "int main(){ int a[10]; a[3] = 3; return a[3];}"
 try 17 "int main(){ int a[10]; a[3] = 3; a[4] = 4; a[5] = 5; return a[3] + a[4] + 3 + a[5] + 2;}"
-try 4 "int main(){ int a[100]; *a = 1; *(a + 28 - 32 + 21) = 3; return a[17] + a[0];}"
+try 4 "int main(){ int b = 2; int a[100]; *a = 1; *(a + 28 - 32 + 21) = 3; return *(a+17) + a[2-b+0];}"
 try 6 "int main(){int a[10];*a = 1;*(a + 1) = 2; *(a + 2) = 3; int *p;p = a;return *p + *(p+1)+*(p+2);}"
 try 10 "int main(){ int a[100]; a[1 - 6 + 20] = 10; return a[15];}"
 try 13 "int main(){ int a[10]; a[3] = 4; a[4] = 9; return *(a+3)+*(a+4);}"
@@ -95,6 +95,8 @@ try 8 "int a; int b[100]; int main(){a = 4; b[5] = 4; return a + b[5];}"
 try 13 "int *p; int x; int main(){x = 5; p = &x; *(p + 1) = 4; *(p + 2) = 4; return *p + *(p+1) + *(p+2);}"
 try 13 "int ***p; int **q; int *r; int x; int main(){ x = 13; r = &x; q = &r; p = &q; return ***p; }"
 try 7 "int b[100]; int main(){ b[0] = 3; *(b+1) = 4; return b[0]+*(b+1);}"
+try 80 "int b[10]; int main(){ return sizeof(b); }"
+try 24 "int a; int *b; int **c; int main(){ return sizeof(a) + sizeof(b) + sizeof(c);}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
