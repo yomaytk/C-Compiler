@@ -546,10 +546,15 @@ Node *primary(){
 				par->type->ptr_to = this_type;
 				node->type->array_size = size;
 				node->type->ty = ARRAY;
-				node->kind = ND_LVAR;
 				par->lhs = node;
 				node->par = par;
-				add_lvar(tok, node, 0, ARRAY);
+				if(!cur_node){
+					node->kind = ND_GBLVAR;
+					add_gblvar(tok, node);
+				}else{
+					node->kind = ND_LVAR;	
+					add_lvar(tok, node, 0, ARRAY);
+				}
 				return node;
 			}else{
 				Node *idnode = add();

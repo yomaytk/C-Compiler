@@ -41,7 +41,13 @@ void gen_lval(Node *node){
 		gen(node->lhs);
 		return;
 	}
-	error("左辺値が変数ではありません.");
+	error("左辺値が変数ではありません.\n");
+}
+
+void gen_gblvar(Node *node){
+	printf("\tlea\trax, %s\n", node->varname);
+	printf("\tpush\trax\n");
+	return;
 }
 
 void gen(Node *node){
@@ -61,7 +67,8 @@ void gen(Node *node){
 		printf("\tpush\trax\n");
 		return;
 	}else if(kind == ND_ASSIGN){
-		gen_lval(node->lhs);
+		if(node->lhs->kind == ND_GBLVAR)	gen_gblvar(node->lhs);
+		else 	gen_lval(node->lhs);
 		gen(node->rhs);
 
 		printf("\tpop\trdi\n");	// result of rvalue
@@ -203,17 +210,21 @@ void gen(Node *node){
 	if(kind == ND_GBLVAR){
 		// 変数定義のとき
 		if(!node->defnode){
+			printf(".bss\n");
 			printf("%s:\n", node->varname);
 			if(node->type->ty == INT)	printf("\t.zero 8\n");
 			else if(node->type->ty == ARRAY)	printf("\t.zero %d\n", node->type->array_size*8);
 			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
+			return;
 		// 変数利用のとき
 		}else{
-			if(node->type->ty == INT)	printf("\tmov\trax, %s[rip]\n", node->varname);
-			else if(node->type->ty == ARRAY){
-				
-				// printf("\tmov\trax, %s[rip+%d]", node->varname, nod)
-			}
+			gen_gblvar(node);
+			if(node->type->ty == ARRAY)	return;
+
+			// push number of global variable, using address of variable
+			printf("\tpop\trax\n");
+			printf("\tmov\trax, [rax]\n");
+			printf("\tpush\trax\n");
 		}
 	}
 

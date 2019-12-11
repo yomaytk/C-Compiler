@@ -57,14 +57,11 @@ int main(int argc, char **argv) {
 	printf(".intel_syntax noprefix\n");
 
 	int i = 0;
-	printf(".bss\n");
-	for(;code[i];i++){
-		if(code[i]->kind != ND_FUN)	gen(code[i]);
-	}
+	for(;code[i] && code[i]->kind != ND_FUN;i++)	gen(code[i]);
 
 	printf(".text\n");
 	printf(".global main\n\n");
-	for(int i = 0;code[i];i++){
+	for(;code[i];i++){
 		gen(code[i]);
 		// printf("\tpop\trax\n");
 	}

@@ -36,7 +36,7 @@ compile_err() {
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
 # basic syntax and various functions
-try 21 "int main(){ int a = 20; return (a+1);}"
+try 21 "int main(){ int a; a = 20; return (a+1);}"
 try 10 "int main(){ return 10; }"
 try 8  "int main(){ int a = 2; int b = 6; return a+b;}"
 try 60 "int main(){ int a = 5; int b = 4; int c = 13; int d = 15; int e = 23; return a+b+c+d+e; }"
@@ -88,8 +88,8 @@ try 3 "int main(){ int a[100]; *a = 1; *(a + 28 - 32 + 21) = 3; return *(a+17);}
 try 6 "int main(){int a[10];*a = 1;*(a + 1) = 2; *(a + 2) = 3; int *p;p = a;return *p + *(p+1)+*(p+2);}"
 try 10 "int main(){ int a[100]; a[1 - 6 + 20] = 10; return a[15];}"
 
-#global
-try 7 "int a; int main(){7;}"
+#global variable
+try 8 "int a; int b[100]; int main(){b[5] = 4; return a + b[5];}"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
