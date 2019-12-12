@@ -103,6 +103,7 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	else 	cur_node->locals_cnt++;
 	// スタック上の変数領域の範囲を更新
 	if(ty == INT)	cur_node->var_size += 8;
+	else if(ty == CHAR)	cur_node->var_size += 1;
 	else if(ty == PTR)	cur_node->var_size	+= 8;
 	else if(ty == ARRAY_INT)	cur_node->var_size += 8*node->type->array_size;
 	else if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
@@ -408,6 +409,7 @@ Node *unary(){
 		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP || typenode->kind == ND_GBLVAR){
 			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
 			else if(typenode->type->ty == INT)	return new_node_num(8);
+			else if(typenode->type->ty == CHAR)	return new_node_num(1);
 			else if(typenode->type->ty == PTR)	return new_node_num(8);
 			else if(typenode->type->ty == ARRAY_INT)	return new_node_num(typenode->type->array_size*8);
 			else if(typenode->type->ty == ARRAY_CHAR)	return new_node_num(typenode->type->array_size*1);

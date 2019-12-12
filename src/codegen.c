@@ -69,7 +69,8 @@ void gen(Node *node){
 
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
-		printf("\tmov\trax, [rax]\n");
+		if(node->type->ty == CHAR)	printf("\tmovsx\trax, BYTE PTR [rax]\n");
+		else 	printf("\tmov\trax, [rax]\n");
 		printf("\tpush\trax\n");
 		return;
 	}else if(kind == ND_ASSIGN){
@@ -79,6 +80,7 @@ void gen(Node *node){
 
 		printf("\tpop\trdi\n");	// result of rvalue
 		printf("\tpop\trax\n");	// address of lvalue
+		// if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], dl\n");
 		printf("\tmov\t[rax], rdi\n");
 		printf("\tpush\trdi\n");
 		return;
@@ -222,6 +224,7 @@ void gen(Node *node){
 			printf(".bss\n");
 			printf("%s:\n", node->varname);
 			if(node->type->ty == INT)	printf("\t.zero 8\n");
+			else if(node->type->ty == CHAR)	printf("\t.zero 1\n");
 			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
 			else if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*8);
 			else if(node->type->ty == ARRAY_CHAR)	printf("\t.zero %ld\n", node->type->array_size*1);

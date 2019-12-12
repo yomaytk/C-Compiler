@@ -9,13 +9,6 @@ main:
 	mov	rax, rbp
 	sub	rax, 1
 	push	rax
-	pop	rax
-	movsx	rax, BYTE PTR [rax]
-	push	rax
-	pop	rax
-	mov	rax, rbp
-	sub	rax, 1
-	push	rax
 	push	10
 	pop	rdi
 	pop	rax
@@ -28,10 +21,6 @@ main:
 	pop	rax
 	movsx	rax, BYTE PTR [rax]
 	push	rax
-	pop	rax
-	mov	rsp, rbp
-	pop	rbp
-	ret
 	pop	rax
 	mov	rsp, rbp
 	pop	rbp

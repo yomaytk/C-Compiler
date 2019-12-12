@@ -99,6 +99,9 @@ try 13 "int b[10000]; int main(){ b[0] = 3; b[1] = 2; *(b+2) = 8; return *b + *(
 try 80 "int b[10]; int main(){ return sizeof(b); }"
 try 24 "int a; int *b; int **c; int main(){ return sizeof(a) + sizeof(b) + sizeof(c);}"
 
+# char
+try 10 "int main(){ char a; a = 10; return a; }"
+
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
 echo -e "\e[32m=== compile_err test start ===\e[m\n"
