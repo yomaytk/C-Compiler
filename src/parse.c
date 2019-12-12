@@ -104,7 +104,8 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	// スタック上の変数領域の範囲を更新
 	if(ty == INT)	cur_node->var_size += 8;
 	else if(ty == PTR)	cur_node->var_size	+= 8;
-	else if(ty == ARRAY)	cur_node->var_size += 8*node->type->array_size;	
+	else if(ty == ARRAY_INT)	cur_node->var_size += 8*node->type->array_size;
+	else if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
 	// =====
 	lvar->offset = cur_node->var_size;
 	if(node)	node->offset = lvar->offset;
@@ -408,7 +409,8 @@ Node *unary(){
 			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
 			else if(typenode->type->ty == INT)	return new_node_num(8);
 			else if(typenode->type->ty == PTR)	return new_node_num(8);
-			else if(typenode->type->ty == ARRAY)	return new_node_num(rhs->type->array_size*8);
+			else if(typenode->type->ty == ARRAY_INT)	return new_node_num(typenode->type->array_size*8);
+			else if(typenode->type->ty == ARRAY_CHAR)	return new_node_num(typenode->type->array_size*1);
 		}else{
 			error_at(token->str, "構文木の型がありません.");
 		}
@@ -429,8 +431,11 @@ Node *primary(){
 	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));
 	int ptr_size = 0;
-	// 型定義があるかの判定
-	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0){
+	int type_select = 0;
+	// 型定義がある場合の処理
+	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0)	type_select = 1;
+	else if(token->len == 4 && strncmp(token->str, "char", token->len) == 0)	type_select = 2;
+	if(type_select > 0){
 		def_flag = 1;
 		token = token->next;
 		Type *type = this_type;
@@ -439,7 +444,8 @@ Node *primary(){
 			type->ptr_to = calloc(1, sizeof(Type));
 			ptr_size++;
 		}
-		type->ty = INT;
+		if(type_select == 1)	type->ty = INT;
+		else if(type_select == 2)	type->ty = CHAR;
 		if(this_type->ty == PTR){
 			par->kind = ND_DEREF;
 			par->type = this_type;
@@ -454,9 +460,10 @@ Node *primary(){
 			par->lhs = calloc(1, sizeof(Node));
 			node->par = par;
 		}
-		/* ノードの型を決める */
+		/* 変数の型を決める(定義時のみ) */
 		node->type = calloc(1, sizeof(Type));
-		node->type->ty = INT;
+		if(type_select == 1)	node->type->ty = INT;
+		else if(type_select == 2)	node->type->ty = CHAR;
 		node->type->ptr_size = ptr_size;
 		/* ===== */
 		Token *token2 = token;
@@ -483,7 +490,8 @@ Node *primary(){
 			Node *vec = node;
 			/* 関数定義の場合 */
 			if(node->kind == ND_FUN){
-				if(!def_flag)	error_at(token->str, "関数の型が定義されていません.");
+				if(type_select == 0)	error_at(token->str, "関数の型が定義されていません.");
+				// =====
 				if(!consume(")")){
 					while(1){
 						if(strncmp(token->str, "int", token->len) == 0){
@@ -503,6 +511,7 @@ Node *primary(){
 				LVar *funlvar = calloc(1, sizeof(LVar));
 				funlvar->name = tok->str;
 				funlvar->len = tok->len;
+				funlvar->defnode = node;
 				if(!function_set_s){
 					function_set_s = function_set_e = funlvar;
 				}else{
@@ -511,20 +520,21 @@ Node *primary(){
 				}
 				/* ブロック内の処理 */
 				node->lhs = stmt();
-				// 環境はグローバルに変更
+				// グローバル環境に変更
 				cur_node = NULL;
 				return node;
 			/* 関数適用の場合 */
 			}else if(node->kind == ND_APP){
-				if(def_flag)	error_at(token->str, "関数適用に型は必要ありません.");
+				if(type_select > 0)	error_at(token->str, "関数適用で型の定義はできません.");
 				// 関数が存在するか確認
 				LVar *lvar = function_set_s;
 				for(;lvar;lvar = lvar->next){
 					if(lvar->len == tok->len && strncmp(lvar->name, tok->str, tok->len) == 0) break;
 				}
 				if(!lvar)	error_at(token->str, "定義されていない関数の参照です.");
+				// 型の決定
+				node->type->ty = lvar->defnode->type->ty;
 				// =====
-				// node->params_cnt = 0;
 				if(!consume(")")){
 					while(1){
 						vec->params = expr();
@@ -543,15 +553,16 @@ Node *primary(){
 			}
 		/* 配列 */
 		}else if(consume("[")){
-			if(def_flag){
+			if(type_select > 0){
 				int size = expect_number();
 				expect(']');
 				par->kind = ND_DEREF;
 				par->type = calloc(1, sizeof(Type));
 				par->type->ty = PTR;
 				par->type->ptr_to = this_type;
+				if(type_select == 1)	node->type->ty = ARRAY_INT;
+				else if(type_select == 2)	node->type->ty = ARRAY_CHAR;
 				node->type->array_size = size;
-				node->type->ty = ARRAY;
 				par->lhs = node;
 				node->par = par;
 				if(!cur_node){
@@ -559,7 +570,7 @@ Node *primary(){
 					add_gblvar(tok, node);
 				}else{
 					node->kind = ND_LVAR;	
-					add_lvar(tok, node, 0, ARRAY);
+					add_lvar(tok, node, 0, node->type->ty);
 				}
 				return node;
 			}else{
@@ -578,7 +589,7 @@ Node *primary(){
 				par->kind = ND_DEREF;
 				par->type = calloc(1, sizeof(Type));
 				par->type->ty = PTR;
-				node->type->ty = ARRAY;
+				node->type->ty = lvar->defnode->type->ty;
 				node->offset = lvar->offset;
 				node->defnode = lvar->defnode;
 				Node *newnode = new_node(INT, ND_ADD, node, idnode);
@@ -591,42 +602,43 @@ Node *primary(){
 		LVar *lvar;
 		// グローバル環境のとき
 		if(!cur_node){
-			if(def_flag){
+			if(type_select > 0){
 				add_gblvar(tok, node);
 				node->kind = ND_GBLVAR;
 				return node;
 			}else{
 				error_at(tok->str, "グローバル環境で変数の参照はできません.\n");
 			}
+		// 関数環境のとき
 		}else{
 			lvar = find_lvar(tok, cur_node);
 			if(lvar)	node->kind = ND_LVAR;
-		}
-		// ローカルでの変数定義のとき
-		if(def_flag){
+			// 変数定義のとき
+			if(type_select > 0){
+				if(!lvar){
+					add_lvar(tok, node, 0, node->type->ty);
+					node->kind = ND_LVAR;
+					return node;
+				}else{
+					error_at(tok->str, "変数定義が重複しています.\n");
+				}
+			}
+			// グローバル変数の参照
 			if(!lvar){
-				add_lvar(tok, node, 0, node->type->ty);
-				node->kind = ND_LVAR;
+				lvar = find_gblvar(tok);
+				if(lvar)	node->kind = ND_GBLVAR;
+			}
+			if(lvar){
+				node->offset = lvar->offset;
+				node->defnode = lvar->defnode;
+				if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
+					node->type->ty = lvar->defnode->type->ty;	
+					node->type->array_size = lvar->defnode->type->array_size;
+				}
 				return node;
 			}else{
-				error_at(tok->str, "変数の多重定義です.\n");
+				error_at(token->str, "定義されていない変数の参照です.");
 			}
-		}
-		// =====
-		if(!lvar){
-			lvar = find_gblvar(tok);
-			if(lvar)	node->kind = ND_GBLVAR;
-		}
-		if(lvar){
-			node->offset = lvar->offset;
-			node->defnode = lvar->defnode;
-			if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
-				node->type->ty = lvar->defnode->type->ty;	
-				node->type->array_size = lvar->defnode->type->array_size;
-			}
-			return node;
-		}else{
-			error_at(token->str, "定義されていない変数の参照です.");
 		}
 	}else if(def_flag){
 		error_at(token->str, "変数以外に型はつけられません.");

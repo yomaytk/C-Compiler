@@ -24,7 +24,7 @@ void ptr_is8n(Node *node){
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;
 		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
-		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY){
+		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY_CHAR || lhs_term->type->ty == ARRAY_INT){
 			Type *par_type = defnode->par->type;
 			printf("\timul\trdi, 8\n");
 		}
@@ -63,8 +63,9 @@ void gen(Node *node){
 		printf("\tpush\t%d\n", node->val);
 		return;
 	}else if(kind == ND_LVAR){
+		// if(!node->defnode)	return;
 		gen_lval(node);
-		if(node->type->ty == ARRAY)	return;
+		if(node->type->ty == ARRAY_INT || node->type->ty == ARRAY_CHAR)	return;
 
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
@@ -157,7 +158,9 @@ void gen(Node *node){
 		Node *vec = node->vector;
 		while(vec){
 			gen(vec);
+			Node *vecc = vec;
 			vec = vec->vector;
+			// if(vecc->kind == ND_LVAR && !vec->defnode)	continue;
 			printf("\tpop\trax\n");
 		}
 		return;
@@ -219,13 +222,14 @@ void gen(Node *node){
 			printf(".bss\n");
 			printf("%s:\n", node->varname);
 			if(node->type->ty == INT)	printf("\t.zero 8\n");
-			else if(node->type->ty == ARRAY)	printf("\t.zero %ld\n", node->type->array_size*8);
 			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
+			else if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*8);
+			else if(node->type->ty == ARRAY_CHAR)	printf("\t.zero %ld\n", node->type->array_size*1);
 			return;
 		// 変数利用のとき
 		}else{
 			gen_gblvar(node);
-			if(node->type->ty == ARRAY)	return;
+			if(node->type->ty == ARRAY_INT || node->type->ty == ARRAY_CHAR)	return;
 
 			// push number of global variable, using address of variable
 			printf("\tpop\trax\n");

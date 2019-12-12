@@ -95,6 +95,7 @@ try 8 "int a; int b[100]; int main(){a = 4; b[5] = 4; return a + b[5];}"
 try 13 "int *p; int x; int main(){x = 5; p = &x; *(p + 1) = 4; *(p + 2) = 4; return *p + *(p+1) + *(p+2);}"
 try 13 "int ***p; int **q; int *r; int x; int main(){ x = 13; r = &x; q = &r; p = &q; return ***p; }"
 try 7 "int b[100]; int main(){ b[0] = 3; *(b+1) = 4; return b[0]+*(b+1);}"
+try 13 "int b[10000]; int main(){ b[0] = 3; b[1] = 2; *(b+2) = 8; return *b + *(b+1) + b[2];}"
 try 80 "int b[10]; int main(){ return sizeof(b); }"
 try 24 "int a; int *b; int **c; int main(){ return sizeof(a) + sizeof(b) + sizeof(c);}"
 

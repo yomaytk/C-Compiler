@@ -73,8 +73,11 @@ typedef struct Type Type;
 
 typedef enum {
 		INT,	// int
+		CHAR,	// chars
 		PTR,	// pointer
 		ARRAY,	// array
+		ARRAY_INT,	// array int
+		ARRAY_CHAR, // array char
 } Ty;
 
 struct Node{
