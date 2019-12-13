@@ -6,7 +6,7 @@
 #include <string.h>
 #include "mss9cc.h"
 
-char *reg64_name[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char *reg64_name[6] = {"rbx", "rsi", "rdx", "rcx", "r8", "r9"};
 
 void fun_params_err(){
 	fprintf(stderr, "仮引数が正しくありません.");
@@ -24,9 +24,9 @@ void ptr_is8n(Node *node){
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;
 		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
-		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY_CHAR || lhs_term->type->ty == ARRAY_INT){
+		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY_INT){
 			Type *par_type = defnode->par->type;
-			printf("\timul\trdi, 8\n");
+			printf("\timul\trbx, 4\n");
 		}
 	}
 	return;
@@ -78,11 +78,11 @@ void gen(Node *node){
 		else 	gen_lval(node->lhs);
 		gen(node->rhs);
 
-		printf("\tpop\trdi\n");	// result of rvalue
+		printf("\tpop\trbx\n");	// result of rvalue
 		printf("\tpop\trax\n");	// address of lvalue
-		// if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], dl\n");
-		printf("\tmov\t[rax], rdi\n");
-		printf("\tpush\trdi\n");
+		if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], bl\n");
+		else 	printf("\tmov\t[rax], rbx\n");
+		printf("\tpush\trbx\n");
 		return;
 	}
 
@@ -223,7 +223,7 @@ void gen(Node *node){
 		if(!node->defnode){
 			printf(".bss\n");
 			printf("%s:\n", node->varname);
-			if(node->type->ty == INT)	printf("\t.zero 8\n");
+			if(node->type->ty == INT)	printf("\t.zero 4\n");
 			else if(node->type->ty == CHAR)	printf("\t.zero 1\n");
 			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
 			else if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*8);
@@ -245,42 +245,42 @@ void gen(Node *node){
 	gen(node->lhs);
 	gen(node->rhs);
 
-	printf("\tpop\trdi\n");
+	printf("\tpop\trbx\n");
 	printf("\tpop\trax\n");
 
 	if(kind == ND_ADD){					// +
 		ptr_is8n(node);
-		printf("\tadd\trax, rdi\n");
+		printf("\tadd\trax, rbx\n");
 	}else if(kind == ND_SUB){			// -
 		ptr_is8n(node);
-		printf("\tsub\trax, rdi\n");
+		printf("\tsub\trax, rbx\n");
 	}else if(kind == ND_MUL){			// *
-		printf("\timul\trax, rdi\n");
+		printf("\timul\trax, rbx\n");
 	}else if(kind == ND_DIV){			// /
 		printf("\tcqo\n");
-		printf("\tidiv\trdi\n");
+		printf("\tidiv\trbx\n");
 	}else if(kind == ND_EQU){			// ==
-		printf("\tcmp\trax, rdi\n");
+		printf("\tcmp\trax, rbx\n");
 		printf("\tsete\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_NOTEQU){			// !=
-		printf("\tcmp\trax, rdi\n");
+		printf("\tcmp\trax, rbx\n");
 		printf("\tsetne\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_RIGHTINE){			// <
-		printf("\tcmp\trax, rdi\n");
+		printf("\tcmp\trax, rbx\n");
 		printf("\tsetl\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_RINEEQU){			// <=
-		printf("\tcmp\trax, rdi\n");
+		printf("\tcmp\trax, rbx\n");
 		printf("\tsetle\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_LEFTINE){			// >
-		printf("\tcmp\trdi, rax\n");
+		printf("\tcmp\trbx, rax\n");
 		printf("\tsetl\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}else if(kind == ND_LINEEQU){			// >=
-		printf("\tcmp\trdi, rax\n");
+		printf("\tcmp\trbx, rax\n");
 		printf("\tsetle\tal\n");
 		printf("\tmovzb\trax, al\n");
 	}

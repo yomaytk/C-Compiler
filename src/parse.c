@@ -6,11 +6,11 @@
 #include <string.h>
 #include "mss9cc.h"
 
-LVar *function_set_s = NULL;
-LVar *function_set_e = NULL;
+LVar *function_set_s;
+LVar *function_set_e;
 
-LVar *globals_s = NULL;
-LVar *globals_e = NULL;
+LVar *globals_s;
+LVar *globals_e;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
@@ -102,11 +102,11 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	if(param_f)	cur_node->params_cnt++;
 	else 	cur_node->locals_cnt++;
 	// スタック上の変数領域の範囲を更新
-	if(ty == INT)	cur_node->var_size += 8;
+	if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
+	else if(ty == ARRAY_INT)	cur_node->var_size += 4*node->type->array_size;
+	else if(node && node->par)	cur_node->var_size += 8;		// 関数定義の時はnode == NULL
+	else if(ty == INT)	cur_node->var_size += 4;
 	else if(ty == CHAR)	cur_node->var_size += 1;
-	else if(ty == PTR)	cur_node->var_size	+= 8;
-	else if(ty == ARRAY_INT)	cur_node->var_size += 8*node->type->array_size;
-	else if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
 	// =====
 	lvar->offset = cur_node->var_size;
 	if(node)	node->offset = lvar->offset;
@@ -408,7 +408,7 @@ Node *unary(){
 		if(!typenode || typenode->kind == ND_ADDR || typenode->kind == ND_DEREF)	return new_node_num(8);
 		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP || typenode->kind == ND_GBLVAR){
 			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
-			else if(typenode->type->ty == INT)	return new_node_num(8);
+			else if(typenode->type->ty == INT)	return new_node_num(4);
 			else if(typenode->type->ty == CHAR)	return new_node_num(1);
 			else if(typenode->type->ty == PTR)	return new_node_num(8);
 			else if(typenode->type->ty == ARRAY_INT)	return new_node_num(typenode->type->array_size*8);
@@ -429,7 +429,6 @@ Node *primary(){
 		expect(')');
 		return node;
 	}
-	int def_flag = 0;
 	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));
 	int ptr_size = 0;
@@ -438,7 +437,6 @@ Node *primary(){
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0)	type_select = 1;
 	else if(token->len == 4 && strncmp(token->str, "char", token->len) == 0)	type_select = 2;
 	if(type_select > 0){
-		def_flag = 1;
 		token = token->next;
 		Type *type = this_type;
 		for(;consume("*");type = type->ptr_to){
@@ -496,14 +494,14 @@ Node *primary(){
 				// =====
 				if(!consume(")")){
 					while(1){
-						if(strncmp(token->str, "int", token->len) == 0){
-							token = token->next;
-						}else{
-							error_at(token->str, "関数定義の引数の型が不正です.");
-						}
+						Ty ty;
+						if(strncmp(token->str, "int", token ->len) == 0)	ty = INT;
+						else if(strncmp(token->str, "char", token->len) == 0)	ty = CHAR;
+						else	error_at(token->str, "関数定義の引数の型が不正です.");
+						token = token->next;
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
-						add_lvar(tok, NULL, 1, node->type->ty);
+						add_lvar(tok, NULL, 1, ty);
 						token = token->next;
 						if(!consume(")"))	expect(',');
 						else 	break;
@@ -642,7 +640,7 @@ Node *primary(){
 				error_at(token->str, "定義されていない変数の参照です.");
 			}
 		}
-	}else if(def_flag){
+	}else if(type_select > 0){
 		error_at(token->str, "変数以外に型はつけられません.");
 	}
 	return new_node_num(expect_number());
