@@ -75,6 +75,7 @@ typedef enum {
 		INT,	// int
 		CHAR,	// chars
 		PTR,	// pointer
+		ADDR,	// address
 		ARRAY,	// array
 		ARRAY_INT,	// array int
 		ARRAY_CHAR, // array char

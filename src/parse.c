@@ -379,7 +379,10 @@ Node *unary(){
 	}else if(consume("-")){
 		return new_node(INT, ND_SUB, new_node_num(0), primary());
 	}else if(consume("&")){
-		return new_node(INT, ND_ADDR, unary(), NULL);
+		Node *lhs = unary();
+		Node *node = new_node(ADDR, ND_ADDR, lhs, NULL);
+		lhs->par = node;
+		return node;
 	}else if(consume("*")){
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_DEREF;
@@ -393,12 +396,7 @@ Node *unary(){
 			ptr_size++;
 		}
 		node->lhs = unary();
-		// if(node->lhs->kind == ND_DEREF){
-		// 	// type->ptr_to = calloc(1, sizeof(Type));
-		// 	// type->ptr_to->ty = PTR;
-		// 	// ptr_size++;
-		// 	node->lhs = node->lhs->lhs;
-		// }
+		node->lhs->par = node;
 		type->ptr_to = node->lhs->type;
 		node->lhs->type->ptr_size = ptr_size;
 		return node;
@@ -409,11 +407,14 @@ Node *unary(){
 		if(!typenode || typenode->kind == ND_ADDR || typenode->kind == ND_DEREF)	return new_node_num(8);
 		else if(typenode->kind == ND_LVAR || typenode->kind == ND_APP || typenode->kind == ND_GBLVAR){
 			if(!typenode->type)	error_at(token->str, "パーズで変数に型がありません.");
+			else if(typenode->type->ty == ARRAY_INT)	return new_node_num(typenode->type->array_size*4);
+			else if(typenode->type->ty == ARRAY_CHAR)	return new_node_num(typenode->type->array_size*1);
+			else if(typenode->par && (typenode->par->type->ty == PTR || typenode->par->type->ty == ADDR))	return new_node_num(8);
+			else if(typenode->defnode && typenode->defnode->par && 
+					(typenode->defnode->par->type->ty == PTR || typenode->defnode->par->type->ty == ADDR))	return new_node_num(8);
 			else if(typenode->type->ty == INT)	return new_node_num(4);
 			else if(typenode->type->ty == CHAR)	return new_node_num(1);
 			else if(typenode->type->ty == PTR)	return new_node_num(8);
-			else if(typenode->type->ty == ARRAY_INT)	return new_node_num(typenode->type->array_size*8);
-			else if(typenode->type->ty == ARRAY_CHAR)	return new_node_num(typenode->type->array_size*1);
 		}else{
 			error_at(token->str, "構文木の型がありません.");
 		}

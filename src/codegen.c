@@ -72,10 +72,14 @@ void gen(Node *node){
 
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
-		if(node->type->ty == CHAR)	printf("\tmovsx\trax, BYTE PTR [rax]\n");
+
+		if((node->par && node->par->type->ty == PTR) 
+			|| (node->defnode && node->defnode->par && node->defnode->par->type->ty == PTR))	printf("\tmov\trax, [rax]\n");
+		else if(node->type->ty == CHAR)	printf("\tmovsx\trax, BYTE PTR [rax]\n");
 		else if(node->type->ty == INT)	printf("\tmov\teax, [rax]\n");
 		else 	printf("\tmov\trax, [rax]\n");
 		printf("\tpush\trax\n");
+
 		return;
 	}else if(kind == ND_ASSIGN){
 		if(node->lhs->kind == ND_GBLVAR)	gen_gblvar(node->lhs);
@@ -84,7 +88,10 @@ void gen(Node *node){
 
 		printf("\tpop\trbx\n");	// result of rvalue
 		printf("\tpop\trax\n");	// address of lvalue
-		if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], bl\n");
+
+		if((node->lhs->par && node->lhs->par->type->ty == PTR)
+			|| (node->lhs->defnode && node->lhs->defnode->par && node->lhs->defnode->par->type->ty == PTR))	printf("\tmov\t[rax], rbx\n");
+		else if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], bl\n");
 		else if(node->lhs->type->ty == INT)	printf("\tmov\t[rax], ebx\n");
 		else 	printf("\tmov\t[rax], rbx\n");
 		printf("\tpush\trbx\n");
@@ -238,11 +245,11 @@ void gen(Node *node){
 		if(!node->defnode){
 			printf(".bss\n");
 			printf("%s:\n", node->varname);
-			if(node->type->ty == INT)	printf("\t.zero 4\n");
-			else if(node->type->ty == CHAR)	printf("\t.zero 1\n");
-			else if(node->type->ty == PTR)	printf("\t.zero 8\n");
-			else if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*8);
+			if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*4);
 			else if(node->type->ty == ARRAY_CHAR)	printf("\t.zero %ld\n", node->type->array_size*1);
+			else if(node->par && (node->par->type->ty == PTR || node->par->type->ty == ADDR))	printf("\t.zero 8\n");
+			else if(node->type->ty == INT)	printf("\t.zero 4\n");
+			else if(node->type->ty == CHAR)	printf("\t.zero 1\n");
 			return;
 		// 変数利用のとき
 		}else{

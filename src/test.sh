@@ -35,9 +35,6 @@ compile_err() {
 
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
-try 7 "int main(){ char x[3]; x[0] = 3; x[1] = 5; x[2] = -1; return x[0] + *(x+1) + x[2]; }"
-# try 5 "int main(){ char *x; char y = 4; x = &y; return *x;}"
-try 11 "int hoge(char a, char b){ char c = 4; return a+b+c; }int main(){ return hoge(3, 4); }"
 
 # basic syntax and various functions
 try 21 "int main(){ int a; a = 20; return (a+1);}"
@@ -67,8 +64,6 @@ try 55 "int sum(int m, int n){ int acc = 0; for (int i = m; i <= n; i = i + 1) a
 
 # pointer
 try 3 "int main(){int x = 3;int *y = &x;return *y;}"
-try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
-try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
 try 5 "int main(){int x;int *y;int **z; x = 5; y = &x; z = &y; return **z;}"
 try 13 "int main(){ int x = 13; int *y = &x; int **z = &y; return **z;}"
@@ -100,11 +95,18 @@ try 13 "int *p; int x; int main(){x = 5; p = &x; *(p + 1) = 4; *(p + 2) = 4; ret
 try 13 "int ***p; int **q; int *r; int x; int main(){ x = 13; r = &x; q = &r; p = &q; return ***p; }"
 try 7 "int b[100]; int main(){ b[0] = 3; *(b+1) = 4; return b[0]+*(b+1);}"
 try 13 "int b[10000]; int main(){ b[0] = 3; b[1] = 2; *(b+2) = 8; return *b + *(b+1) + b[2];}"
-try 80 "int b[10]; int main(){ return sizeof(b); }"
-try 24 "int a; int *b; int **c; int main(){ return sizeof(a) + sizeof(b) + sizeof(c);}"
+try 40 "int b[10]; int main(){ return sizeof(b); }"
+try 20 "int a; int *b; int **c; int main(){ return sizeof(a) + sizeof(b) + sizeof(c);}"
 
 # char
 try 8 "int main(){ char a = 3; char b = 5; return a+b; }"
+try 7 "int main(){ char x[3]; x[0] = 3; x[1] = 5; x[2] = -1; return x[0] + *(x+1) + x[2]; }"
+try 4 "int main(){ char *x; char y = 4; x = &y; return *x;}"
+try 11 "int hoge(char a, char b){ char c = 4; return a+b+c; }int main(){ return hoge(3, 4); }"
+try 6 "int main(){ char a = 2; int b = 4; return a+b;}"
+try 13 "int hoge(char a, char b){ return a+b;} char hoge2(int a, char b){ return a*b; }int main(){ return hoge(2,3) + hoge2(2,4);}"
+try 5 "int main(){ char x = 5; char *y = &x; char **z = &y; char ***w = &z; return ***w; }"
+try 14 "char a; char *p; int q; int main(){ a = 5; q = 9; p = &q; return a + *p; }"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
