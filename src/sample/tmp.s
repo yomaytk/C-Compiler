@@ -1,22 +1,52 @@
 .intel_syntax noprefix
+.text
 .global main
 
-.text
-
 main:
-  push rbp
-  mov rbp, rsp
-  sub rsp, 100
-  mov rax, rbp
-  sub rax, 4
-  mov rdi, 10
-  mov [rax], rdi
-  mov rax, [rax]
-  push rax
-  mov rdi, 2
-  add rax, rdi
-  push rax
-  pop rax
-  mov rsp, rbp
-  pop rbp
-  ret
+	push	rbp
+	mov	rbp, rsp
+	sub	rsp, 12
+	mov	rax, rbp
+	sub	rax, 4
+	push	rax
+	push	3
+	pop	rbx
+	pop	rax
+	mov	[rax], ebx
+	push	rbx
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 12
+	push	rax
+	pop	rax
+	mov	eax, [rax]
+	push	rax
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 12
+	push	rax
+	mov	rax, rbp
+	sub	rax, 4
+	push	rax
+	pop	rbx
+	pop	rax
+	mov	[rax], ebx
+	push	rbx
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 12
+	push	rax
+	pop	rax
+	mov	eax, [rax]
+	push	rax
+	pop	rax
+	mov	rax, [rax]
+	push	rax
+	pop	rax
+	mov	rsp, rbp
+	pop	rbp
+	ret
+	pop	rax
+	mov	rsp, rbp
+	pop	rbp
+	ret

@@ -6,7 +6,10 @@
 #include <string.h>
 #include "mss9cc.h"
 
-char *reg64_name[6] = {"rbx", "rsi", "rdx", "rcx", "r8", "r9"};
+char *reg64_name[6] = {"rdi", "rsi", "rdx", "rcx", "r8", "r9"};
+char *reg32_name[6] = {"edi", "esi", "edx", "ecx", "r8d", "r9d"};
+char *reg16_name[6] = {"di", "si", "dx", "cx", "r8w", "r9w"};
+char *reg8_name[6] = {"dil", "sil", "dl", "cl", "r8b", "r9b"};
 
 void fun_params_err(){
 	fprintf(stderr, "仮引数が正しくありません.");
@@ -70,6 +73,7 @@ void gen(Node *node){
 		// push number of variable, using address of variable
 		printf("\tpop\trax\n");
 		if(node->type->ty == CHAR)	printf("\tmovsx\trax, BYTE PTR [rax]\n");
+		else if(node->type->ty == INT)	printf("\tmov\teax, [rax]\n");
 		else 	printf("\tmov\trax, [rax]\n");
 		printf("\tpush\trax\n");
 		return;
@@ -81,6 +85,7 @@ void gen(Node *node){
 		printf("\tpop\trbx\n");	// result of rvalue
 		printf("\tpop\trax\n");	// address of lvalue
 		if(node->lhs->type->ty == CHAR)	printf("\tmov\t[rax], bl\n");
+		else if(node->lhs->type->ty == INT)	printf("\tmov\t[rax], ebx\n");
 		else 	printf("\tmov\t[rax], rbx\n");
 		printf("\tpush\trbx\n");
 		return;
@@ -191,8 +196,18 @@ void gen(Node *node){
 		}
 		printf("\tsub\trsp, %d\n", node->var_size);
 		LVar *lvar = node->locals_s;
+		int params_size = 0;
 		for(int i = 1;i <= node->params_cnt;i++, lvar = lvar->next){
-			printf("\tmov\t[rbp-%d], %s\n", i*8, reg64_name[i-1]);
+			if(lvar->params_ty == INT)	{
+				printf("\tmov\t[rbp-%d], %s\n", params_size+4, reg32_name[i-1]);
+				params_size += 4;
+			}else if(lvar->params_ty == CHAR){
+				printf("\tmov\t[rbp-%d], %s\n", params_size+1, reg8_name[i-1]);
+				params_size += 1;
+			}else if(lvar->params_ty == ARRAY_INT || lvar->params_ty == ARRAY_CHAR || lvar->params_ty == PTR){
+				printf("\tmov\t[rbp-%d], %s\n", params_size+8, reg16_name[i-1]);
+				params_size += 8;
+			}
 		}
 		gen(node->lhs);
 		printf("\tmov\trsp, rbp\n");

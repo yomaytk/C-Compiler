@@ -66,7 +66,7 @@ try 55 "int main(){ int ans = 0; for(int i = 0;i <= 10;i = i + 1){ ans = ans + i
 try 55 "int sum(int m, int n){ int acc = 0; for (int i = m; i <= n; i = i + 1) acc = acc + i; return acc; } int main() { return sum(1, 10);}"
 
 # pointer
-try 3 "int main(){int x = 3;int y = &x;return *y;}"
+try 3 "int main(){int x = 3;int *y = &x;return *y;}"
 try 3 "int main(){int x = 3;int y = 5;int z = &y + 8;return *z;}"
 try 6 "int main(){ int x; x = 6; return x; }"
 try 3 "int main(){int x;int *y;y = &x;*y = 3;return x;}"
@@ -82,9 +82,9 @@ try 13 "int main(){ int x = 8; int *y; y = &x; return *y - 1 + 2*3;}"
 # sizeof
 try 8 "int main(){ int *x; sizeof (x+1+5*8);}"
 try 8 "int main(){ int x; sizeof(&x);}"
-try 8 "int hoge(int a){ return a;}int main(){ sizeof(hoge(10)); }"
-try 8 "int main(){ int x; sizeof(x+5*5);}"
-try 80 "int main(){ int a[10]; sizeof a;}"
+try 4 "int hoge(int a){ return a;}int main(){ sizeof(hoge(10)); }"
+try 4 "int main(){ int x; sizeof(x+5*5);}"
+try 40 "int main(){ int a[10]; sizeof a;}"
 
 # array
 try 3 "int main(){ int a[10]; a[3] = 3; return a[3];}"

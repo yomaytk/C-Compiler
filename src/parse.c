@@ -95,6 +95,7 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	lvar->len = tok->len;
 	lvar->name = tok->str;
 	lvar->defnode = node;
+	if(!node)	lvar->params_ty = ty;	// 関数定義の仮引数の型を保存
 	// 変数が一つ目かそうでないか
 	if(cur_node->locals_e)	cur_node->locals_e->next = lvar;
 	else	cur_node->locals_s = lvar;

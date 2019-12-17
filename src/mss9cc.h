@@ -107,6 +107,7 @@ struct LVar {
 	int len;
 	int offset;
 	Node *defnode;
+	Ty params_ty;
 };
 
 struct Type {
