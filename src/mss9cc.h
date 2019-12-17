@@ -14,6 +14,7 @@ typedef enum {
 	TK_WHILE,
 	TK_FOR,
 	TK_SIZEOF,
+	TK_STRING,
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -70,6 +71,7 @@ typedef enum{
 typedef struct Node Node;
 typedef struct LVar LVar;
 typedef struct Type Type;
+typedef struct String String;
 
 typedef enum {
 		INT,	// int
@@ -118,6 +120,12 @@ struct Type {
 	size_t ptr_size;
 };
 
+struct String {
+	char *str;
+	int len;
+	String *next;
+};
+
 
 void program();
 Node *stmt();
@@ -150,6 +158,8 @@ extern LVar *function_set_s;
 extern LVar *function_set_e;
 extern LVar *globals_s;
 extern LVar *globals_e;
+extern String *string_s;
+extern String *string_e;
 
 /* ~~~~~ main.c ~~~~~ */
 

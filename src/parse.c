@@ -12,6 +12,9 @@ LVar *function_set_e;
 LVar *globals_s;
 LVar *globals_e;
 
+String *string_s;
+String *string_e;
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
@@ -430,6 +433,16 @@ Node *primary(){
 		Node *node = expr();
 		expect(')');
 		return node;
+	}else if(consume("\"")){
+		String *string = calloc(1, sizeof(String));
+		string->len = token->len;
+		string->str = token->str;
+		if(string_s){
+			string_e->next = string;
+		}else{
+			string_s = string;
+		}
+		string_e = string;
 	}
 	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));
