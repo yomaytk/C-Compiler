@@ -35,6 +35,8 @@ compile_err() {
 
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
+# char literal
+try 5 "int main(){ \"hello, world\"; return 5; }"
 
 # basic syntax and various functions
 try 21 "int main(){ int a; a = 20; return (a+1);}"

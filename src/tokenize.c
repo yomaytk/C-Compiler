@@ -18,7 +18,10 @@ Token *new_token(TokenKind kind, Token *cur, char *str, int len) {
 	Token *tok = calloc(1, sizeof(Token));
 	tok->kind = kind;
 	tok->str = str;
-	if(len > 0)	tok->len = len;
+	if(len > 0)	{
+		tok->len = len;
+		// *(tok->str+tok->len) = '\0';
+	}
 	cur->next = tok;
 	return tok;
 }
@@ -103,10 +106,18 @@ Token *tokenize(char *p) {
 		}
 
 		if(*p == '\"'){
-			int len = 1;
-			for(;*(p + len) != '\"';len++){ continue; }
-			cur = new_token(TK_STRING, cur, p, len-1);
-			p += len+1;
+			cur = new_token(TK_RESERVED, cur, p++, 1);
+			int len = 0;
+			for(;*(p + len) != '\"';){ len++; }
+			cur = new_token(TK_STRING, cur, p, len);
+			p += len;
+			if(*p == '#'){
+				cur = new_token(TK_RESERVED, cur, p++, 1);
+			}else{
+				error_at(p, "不正な文字列の定義です.");
+			printf("%d", len);
+			}
+			continue;
 		}
 
 		if(!strncmp(p, "==", 2) || !strncmp(p, "!=", 2) 

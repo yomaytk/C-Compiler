@@ -429,20 +429,30 @@ Node *unary(){
 
 Node *primary(){
 
+		printf("%s\n", token->str);
 	if(consume("(")){
 		Node *node = expr();
 		expect(')');
 		return node;
 	}else if(consume("\"")){
+		// グローバル環境に文字列を確保
 		String *string = calloc(1, sizeof(String));
 		string->len = token->len;
 		string->str = token->str;
+		*(string->str+string->len) = '\0';
 		if(string_s){
 			string_e->next = string;
 		}else{
 			string_s = string;
 		}
+		string_s->size++;
 		string_e = string;
+		token = token->next;
+		expect('#');
+		Node *node = calloc(1, sizeof(Node));
+		node->kind = ND_STRING;
+		node->offset = string_s->size;
+		return node;
 	}
 	Node *par = calloc(1, sizeof(Node));
 	Type *this_type = calloc(1, sizeof(Type));

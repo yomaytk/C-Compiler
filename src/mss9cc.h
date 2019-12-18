@@ -66,6 +66,7 @@ typedef enum{
 	ND_ADDR,		// &p
 	ND_DEREF,		// *p	
 	ND_GBLVAR,		// global variable
+	ND_STRING		// string
 } Nodekind;
 
 typedef struct Node Node;
@@ -124,6 +125,7 @@ struct String {
 	char *str;
 	int len;
 	String *next;
+	int size;
 };
 
 
@@ -142,7 +144,6 @@ bool consume_tokenstay(char *op);
 Token *consume_ident();
 int expect_number();
 void expect(char op);
-int expect_number();
 void gen(Node *node);
 bool at_eof();
 

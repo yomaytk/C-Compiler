@@ -56,6 +56,12 @@ int main(int argc, char **argv) {
 	program();
 	printf(".intel_syntax noprefix\n");
 
+	int j = 1;
+	for(String *string = string_s;string;string = string->next, j++){
+		printf(".L.str%d\n", j);
+		printf("\t.ascii \"%s\\000\n", string->str);
+	}
+
 	int i = 0;
 	for(;code[i] && code[i]->kind != ND_FUN;i++)	gen(code[i]);
 
