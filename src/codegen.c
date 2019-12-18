@@ -19,7 +19,7 @@ void fun_params_err(){
 void ptr_is8n(Node *node){
 	// 最左端のノードを見つける
 	Node *lhs_term = node;
-	while(lhs_term->lhs)	{
+	while(lhs_term->lhs){
 		lhs_term = lhs_term->lhs;
 		if(lhs_term->kind == ND_DEREF)	return;
 	}
@@ -27,8 +27,7 @@ void ptr_is8n(Node *node){
 	if(lhs_term->defnode && lhs_term->defnode->par && lhs_term->defnode->par->kind == ND_DEREF){
 		Node *defnode = lhs_term->defnode;
 		int ptr_dif = defnode->type->ptr_size - lhs_term->type->ptr_size;
-		if(ptr_dif > 0 || lhs_term->type->ty == ARRAY_INT){
-			Type *par_type = defnode->par->type;
+		if((ptr_dif > 0 && lhs_term->defnode->type->ty == INT) || lhs_term->type->ty == ARRAY_INT){
 			printf("\timul\trbx, 4\n");
 		}
 	}
@@ -50,7 +49,7 @@ void gen_lval(Node *node){
 	error("左辺値が変数ではありません.\n");
 }
 
-void gen_gblvar(Node *node){
+void gen_gval(Node *node){
 	printf("\tlea\trax, %s\n", node->varname);
 	printf("\tpush\trax\n");
 	return;
@@ -62,11 +61,12 @@ void gen(Node *node){
 	
 	Nodekind kind = node->kind;
 
+	if(kind == ND_STRING)	return;
+
 	if(kind == ND_NUM){
 		printf("\tpush\t%d\n", node->val);
 		return;
 	}else if(kind == ND_LVAR){
-		// if(!node->defnode)	return;
 		gen_lval(node);
 		if(node->type->ty == ARRAY_INT || node->type->ty == ARRAY_CHAR)	return;
 
@@ -82,10 +82,14 @@ void gen(Node *node){
 
 		return;
 	}else if(kind == ND_ASSIGN){
-		if(node->lhs->kind == ND_GBLVAR)	gen_gblvar(node->lhs);
+		if(node->lhs->kind == ND_GBLVAR)	gen_gval(node->lhs);
 		else 	gen_lval(node->lhs);
-		gen(node->rhs);
-
+		if(node->rhs->kind == ND_STRING){
+			printf("\tlea\tr10, .L.str%d\n", node->rhs->offset);
+			printf("\tpush\tr10\n");
+		}else{
+			gen(node->rhs);
+		}
 		printf("\tpop\trbx\n");	// result of rvalue
 		printf("\tpop\trax\n");	// address of lvalue
 
@@ -174,7 +178,6 @@ void gen(Node *node){
 			gen(vec);
 			Node *vecc = vec;
 			vec = vec->vector;
-			// if(vecc->kind == ND_LVAR && !vec->defnode)	continue;
 			printf("\tpop\trax\n");
 		}
 		return;
@@ -212,7 +215,7 @@ void gen(Node *node){
 				printf("\tmov\t[rbp-%d], %s\n", params_size+1, reg8_name[i-1]);
 				params_size += 1;
 			}else if(lvar->params_ty == ARRAY_INT || lvar->params_ty == ARRAY_CHAR || lvar->params_ty == PTR){
-				printf("\tmov\t[rbp-%d], %s\n", params_size+8, reg16_name[i-1]);
+				printf("\tmov\t[rbp-%d], %s\n", params_size+8, reg64_name[i-1]);
 				params_size += 8;
 			}
 		}
@@ -224,7 +227,7 @@ void gen(Node *node){
 	}
 
 	if(kind == ND_ADDR){
-		if(node->lhs->kind == ND_GBLVAR)	gen_gblvar(node->lhs);
+		if(node->lhs->kind == ND_GBLVAR)	gen_gval(node->lhs);
 		else 	gen_lval(node->lhs);
 		return;
 	}
@@ -253,7 +256,7 @@ void gen(Node *node){
 			return;
 		// 変数利用のとき
 		}else{
-			gen_gblvar(node);
+			gen_gval(node);
 			if(node->type->ty == ARRAY_INT || node->type->ty == ARRAY_CHAR)	return;
 
 			// push number of global variable, using address of variable
@@ -262,6 +265,10 @@ void gen(Node *node){
 			printf("\tpush\trax\n");
 			return;
 		}
+	}
+
+	if(kind == ND_STRING){
+		
 	}
 
 	gen(node->lhs);

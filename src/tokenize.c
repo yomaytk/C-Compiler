@@ -111,11 +111,10 @@ Token *tokenize(char *p) {
 			for(;*(p + len) != '\"';){ len++; }
 			cur = new_token(TK_STRING, cur, p, len);
 			p += len;
-			if(*p == '#'){
+			if(*p == '\"'){
 				cur = new_token(TK_RESERVED, cur, p++, 1);
 			}else{
 				error_at(p, "不正な文字列の定義です.");
-			printf("%d", len);
 			}
 			continue;
 		}

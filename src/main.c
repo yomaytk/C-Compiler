@@ -58,8 +58,9 @@ int main(int argc, char **argv) {
 
 	int j = 1;
 	for(String *string = string_s;string;string = string->next, j++){
-		printf(".L.str%d\n", j);
-		printf("\t.ascii \"%s\\000\n", string->str);
+		printf(".data\n");
+		printf(".L.str%d:\n", j);
+		printf("\t.ascii \"%.*s\\000\"\n\n", string->len, string->str);
 	}
 
 	int i = 0;

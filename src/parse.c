@@ -98,7 +98,7 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	lvar->len = tok->len;
 	lvar->name = tok->str;
 	lvar->defnode = node;
-	if(!node)	lvar->params_ty = ty;	// 関数定義の仮引数の型を保存
+	if(param_f)	lvar->params_ty = ty;	// 関数定義の仮引数の型を保存
 	// 変数が一つ目かそうでないか
 	if(cur_node->locals_e)	cur_node->locals_e->next = lvar;
 	else	cur_node->locals_s = lvar;
@@ -108,12 +108,12 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	// スタック上の変数領域の範囲を更新
 	if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
 	else if(ty == ARRAY_INT)	cur_node->var_size += 4*node->type->array_size;
-	else if(node && node->par)	cur_node->var_size += 8;		// 関数定義の時はnode == NULL
+	else if(ty == PTR || ty == ADDR || node->par)	cur_node->var_size += 8;
 	else if(ty == INT)	cur_node->var_size += 4;
 	else if(ty == CHAR)	cur_node->var_size += 1;
 	// =====
 	lvar->offset = cur_node->var_size;
-	if(node)	node->offset = lvar->offset;
+	node->offset = lvar->offset;
 	cur_node->locals_e = lvar;
 	return;
 }
@@ -285,7 +285,8 @@ Node *stmt(){
 		node->kind = ND_BLOCK;
 		Node *vec = node;
 		while(!consume("}")){
-			vec->vector = stmt();
+			Node *vector = stmt();
+			vec->vector = vector;
 			vec = vec->vector;
 		}
 		return node;
@@ -429,7 +430,6 @@ Node *unary(){
 
 Node *primary(){
 
-		printf("%s\n", token->str);
 	if(consume("(")){
 		Node *node = expr();
 		expect(')');
@@ -439,7 +439,6 @@ Node *primary(){
 		String *string = calloc(1, sizeof(String));
 		string->len = token->len;
 		string->str = token->str;
-		*(string->str+string->len) = '\0';
 		if(string_s){
 			string_e->next = string;
 		}else{
@@ -448,10 +447,12 @@ Node *primary(){
 		string_s->size++;
 		string_e = string;
 		token = token->next;
-		expect('#');
+		expect('\"');
 		Node *node = calloc(1, sizeof(Node));
 		node->kind = ND_STRING;
 		node->offset = string_s->size;
+		node->type = calloc(1, sizeof(Node));
+		node->type->ty = PTR;
 		return node;
 	}
 	Node *par = calloc(1, sizeof(Node));
@@ -520,13 +521,21 @@ Node *primary(){
 				if(!consume(")")){
 					while(1){
 						Ty ty;
-						if(strncmp(token->str, "int", token ->len) == 0)	ty = INT;
+						Node *params_node = calloc(1, sizeof(Node));
+						params_node->type = calloc(1, sizeof(Type));
+						if(strncmp(token->str, "char *", token->len+2) == 0
+								|| strncmp(token->str, "int *", token->len+2) == 0){
+							ty = PTR;
+							token = token->next;
+						}
+						else if(strncmp(token->str, "int", token ->len) == 0)	ty = INT;
 						else if(strncmp(token->str, "char", token->len) == 0)	ty = CHAR;
 						else	error_at(token->str, "関数定義の引数の型が不正です.");
 						token = token->next;
 						Token *tok = consume_ident();
 						if(!tok)	error("関数定義の仮引数が正しくありません.");
-						add_lvar(tok, NULL, 1, ty);
+						params_node->type->ty = ty;
+						add_lvar(tok, params_node, 1, ty);
 						token = token->next;
 						if(!consume(")"))	expect(',');
 						else 	break;
@@ -656,10 +665,8 @@ Node *primary(){
 			if(lvar){
 				node->offset = lvar->offset;
 				node->defnode = lvar->defnode;
-				if(lvar->defnode)	{						// 関数定義の引数にはdefnodeは存在しない
-					node->type->ty = lvar->defnode->type->ty;	
-					node->type->array_size = lvar->defnode->type->array_size;
-				}
+				node->type->ty = lvar->defnode->type->ty;	
+				node->type->array_size = lvar->defnode->type->array_size;
 				return node;
 			}else{
 				error_at(token->str, "定義されていない変数の参照です.");

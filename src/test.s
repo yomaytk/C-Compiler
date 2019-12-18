@@ -1,65 +1,38 @@
 .intel_syntax noprefix
+.data
+.L.str1:
+	.ascii "hello, world\000"
+
 .text
 .global main
 
-hoge:
-	push	rbp
-	mov	rbp, rsp
-	sub	rsp, 3
-	mov	[rbp-1], dil
-	mov	[rbp-2], sil
-	mov	rax, rbp
-	sub	rax, 3
-	push	rax
-	push	4
-	pop	rbx
-	pop	rax
-	mov	[rax], bl
-	push	rbx
-	pop	rax
-	mov	rax, rbp
-	sub	rax, 1
-	push	rax
-	pop	rax
-	mov	rax, [rax]
-	push	rax
-	mov	rax, rbp
-	sub	rax, 2
-	push	rax
-	pop	rax
-	mov	rax, [rax]
-	push	rax
-	pop	rbx
-	pop	rax
-	add	rax, rbx
-	push	rax
-	mov	rax, rbp
-	sub	rax, 3
-	push	rax
-	pop	rax
-	movsx	rax, BYTE PTR [rax]
-	push	rax
-	pop	rbx
-	pop	rax
-	add	rax, rbx
-	push	rax
-	pop	rax
-	mov	rsp, rbp
-	pop	rbp
-	ret
-	pop	rax
-	mov	rsp, rbp
-	pop	rbp
-	ret
 main:
 	push	rbp
 	mov	rbp, rsp
-	sub	rsp, 0
+	sub	rsp, 8
+	mov	rax, rbp
+	sub	rax, 8
+	push	rax
+	lea	r10, .L.str1
+	push	r10
+	pop	rbx
+	pop	rax
+	mov	[rax], rbx
+	push	rbx
+	pop	rax
+	mov	rax, rbp
+	sub	rax, 8
+	push	rax
+	pop	rax
+	mov	rax, [rax]
+	push	rax
 	push	3
-	push	4
-	pop	rsi
-	pop	rdi
-	call	hoge
+	pop	rbx
+	pop	rax
+	add	rax, rbx
+	push	rax
+	pop	rax
+	mov	rax, [rax]
 	push	rax
 	pop	rax
 	mov	rsp, rbp

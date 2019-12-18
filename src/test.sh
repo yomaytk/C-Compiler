@@ -35,8 +35,6 @@ compile_err() {
 
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
-# char literal
-try 5 "int main(){ \"hello, world\"; return 5; }"
 
 # basic syntax and various functions
 try 21 "int main(){ int a; a = 20; return (a+1);}"
@@ -109,6 +107,13 @@ try 6 "int main(){ char a = 2; int b = 4; return a+b;}"
 try 13 "int hoge(char a, char b){ return a+b;} char hoge2(int a, char b){ return a*b; }int main(){ return hoge(2,3) + hoge2(2,4);}"
 try 5 "int main(){ char x = 5; char *y = &x; char **z = &y; char ***w = &z; return ***w; }"
 try 14 "char a; char *p; int q; int main(){ a = 5; q = 9; p = &q; return a + *p; }"
+
+# char literal
+try 5 "int main(){ \"hello, world\"; return 5; }"
+try 97 "int main(){ char *a = \"abc\"; return a[0]; }"
+try 100 "int main(){ char *a = \"abcde\"; return a[0] - *(a+1) + a[4]; }"
+try 97 "char *a; int main(){ a = \"iiaii\"; return a[2]; }"
+try 98 "char hoge(char *a){ return a[1]; }int main(){ char *a = \"abc\"; return hoge(a); }"
 
 echo -e "\n\e[32m=== try test SUCCESS ===\e[m\n"
 
