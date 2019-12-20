@@ -15,6 +15,9 @@ LVar *globals_e;
 String *string_s;
 String *string_e;
 
+Node *struct_node_s;
+Node *struct_node_e;
+
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
 bool consume(char *op) {
@@ -519,9 +522,9 @@ Node *primary(){
 				}else if(consume("struct")){
 					Token *tag_tok = consume_ident();
 					Token *tok = consume_ident();
-					LVar *lvar = find_lvar(tag_tok, cur_node);
+					LVar *lvar = find_structval(tag_tok);
 					if(!lvar)	lvar = find_gblvar(tag_tok);
-					if(!lvar)	error_at("定義されていない変数の参照です.\n");
+					if(!lvar)	error_at(tok->str, "定義されていない変数の参照です.\n");
 					add_structlval(tok, node, member, STRUCT, -1, lvar->defnode->member_size);
 					char_cnt = 0;
 				}
@@ -548,7 +551,7 @@ Node *primary(){
 			par->type = this_type;
 		}
 	}
-	// =====
+	// ===== 
 	Token *tok = consume_ident();
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
