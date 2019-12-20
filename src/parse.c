@@ -118,6 +118,29 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	return;
 }
 
+void add_structlval(token *tok, Node *node, Node *member, Ty ty, int char_cnt, int struct_size){
+	if(ty == INT){
+		member->offset = node->member_size;
+		node->member_size += 4;
+	}else if(ty == CHAR){
+		if(char_cnt == 0){
+			member->offset = node->member_size;
+			node->member_size += 4;
+		}else{
+			member->offset = node->member_size - 4 + char_cnt;
+		}
+	}else if(ty == STRUCT){
+		member->offset = node->member_size;
+		node->member_size += struct_size;
+	}else if(ty == PTR){
+		member->offset = node->member_size;
+		node->member_size += 8;
+	}
+	strncpy(member->varname, tok->str, tok->len);
+	*(member->varname + tok->len) = '\0';
+	return;
+}
+
 /* グローバル環境にLVarを追加 */
 void add_gblvar(Token *tok, Node *node){
 	LVar *lvar = calloc(1, sizeof(LVar));
@@ -430,10 +453,16 @@ Node *unary(){
 
 Node *primary(){
 
+	Node *par = calloc(1, sizeof(Node));
+	Type *this_type = calloc(1, sizeof(Type));
+	int ptr_size = 0;
+	int type_select = 0;
+
 	if(consume("(")){
 		Node *node = expr();
 		expect(')');
 		return node;
+	// 文字列リテラル
 	}else if(consume("\"")){
 		// グローバル環境に文字列を確保
 		String *string = calloc(1, sizeof(String));
@@ -454,11 +483,53 @@ Node *primary(){
 		node->type = calloc(1, sizeof(Node));
 		node->type->ty = PTR;
 		return node;
+	}else if(consume_tokenstay("struct")){
+		// 構造体の型定義か変数定義か判定
+		Token *token2 = token;
+		bool flag = false;
+		while(true){
+			if(consume_tokenstay("{")){
+				break;
+			}else if(consume_tokenstay(";")){
+				flag = true;
+				break;
+			}
+			token = token->next;
+		}
+		token = token2;
+		// =====
+		if(!flag){
+			Token *tag = consume_ident();
+			if(!tag)	error_at("構造体定義にタグ名がありません.\n");
+			expect('{');
+			Node *node = calloc(1, sizeof(Node));
+			// メンバ定義
+			int char_cnt = 0;
+			for(Node *member = node->member;!consume("}");member = member->member){
+				member = calloc(1, sizeof(Node));
+				if(consume("int")){
+					Token *tok = consume_ident();
+					add_structlval(tok, node, member, INT, -1, -1);
+					char_cnt = 0;
+				}else if(consume("char")){
+					Token *tok = consume_ident();
+					add_structlval(tok, node, member, CHAR, char_cnt, -1);
+					if(char_cnt  == 3)	char_cnt = 0;
+					else 	char_cnt++;
+				}else if(consume("struct")){
+					Token *tag_tok = consume_ident();
+					Token *tok = consume_ident();
+					LVar *lvar = find_lvar(tag_tok, cur_node);
+					if(!lvar)	lvar = find_gblvar(tag_tok);
+					if(!lvar)	error_at("定義されていない変数の参照です.\n");
+					add_structlval(tok, node, member, STRUCT, -1, lvar->defnode->member_size);
+					char_cnt = 0;
+				}
+				expect(';');
+			}
+			expect(';');
+		}
 	}
-	Node *par = calloc(1, sizeof(Node));
-	Type *this_type = calloc(1, sizeof(Type));
-	int ptr_size = 0;
-	int type_select = 0;
 	// 型定義がある場合の処理
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0)	type_select = 1;
 	else if(token->len == 4 && strncmp(token->str, "char", token->len) == 0)	type_select = 2;

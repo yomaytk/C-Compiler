@@ -15,6 +15,7 @@ typedef enum {
 	TK_FOR,
 	TK_SIZEOF,
 	TK_STRING,
+	TK_STRUCT,
 	TK_EOF,      // end token
 } TokenKind;
 
@@ -66,7 +67,8 @@ typedef enum{
 	ND_ADDR,		// &p
 	ND_DEREF,		// *p	
 	ND_GBLVAR,		// global variable
-	ND_STRING		// string
+	ND_STRING,		// string
+	ND_STRUCT,		// struct
 } Nodekind;
 
 typedef struct Node Node;
@@ -82,6 +84,7 @@ typedef enum {
 		ARRAY,	// array
 		ARRAY_INT,	// array int
 		ARRAY_CHAR, // array char
+		STRUCT, 
 } Ty;
 
 struct Node{
@@ -103,6 +106,8 @@ struct Node{
 	Node *defnode;
 	Node *par;
 	int var_size;
+	Node *member;
+	int member_size;
 };
 
 struct LVar {
@@ -127,7 +132,6 @@ struct String {
 	String *next;
 	int size;
 };
-
 
 void program();
 Node *stmt();
