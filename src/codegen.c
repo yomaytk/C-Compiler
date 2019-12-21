@@ -57,7 +57,7 @@ void gen_gval(Node *node){
 
 void gen(Node *node){
 
-	if(node == NULL)	error("genでNULLノードが呼ばれました.");
+	if(node == NULL)	return;
 	
 	Nodekind kind = node->kind;
 

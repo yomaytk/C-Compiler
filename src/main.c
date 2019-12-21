@@ -16,9 +16,9 @@ char *user_input;
 // label number for uniqueness
 int label_cnt = 0;
 
-Node *cur_node;
-
 int main_flag = 0;
+
+Node *ignore;
 
 // notice price of error
 void error_at(char *loc, char *fmt, ...) {
@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	token = tokenize(argv[1]);
 	// debug of lexer
 	// { tokenize_debug(token); return 0; }
-
+	ignore = calloc(1, sizeof(Node));
 	program();
 	printf(".intel_syntax noprefix\n");
 
@@ -64,8 +64,10 @@ int main(int argc, char **argv) {
 	}
 
 	int i = 0;
-	for(;code[i] && code[i]->kind != ND_FUN;i++)	gen(code[i]);
-
+	for(;code[i] && code[i]->kind != ND_FUN;i++){
+		if(code[i] == ignore)	continue;
+		gen(code[i]);
+	}
 	printf(".text\n");
 	printf(".global main\n\n");
 	for(;code[i];i++){
@@ -73,12 +75,6 @@ int main(int argc, char **argv) {
 		// printf("\tpop\trax\n");
 	}
 	
-	// for(int i = 0;code[i];i++){
-	// 	printf("code[%d]:\n", i);
-	// 	char *sss = syntax_debug(code[i]);
-	// 	printf("%s\n", sss);
-	// }
-
 	if(!main_flag)	error("main関数がありません.");
 
 	return 0;

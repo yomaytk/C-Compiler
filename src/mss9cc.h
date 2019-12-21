@@ -75,15 +75,16 @@ typedef struct Node Node;
 typedef struct LVar LVar;
 typedef struct Type Type;
 typedef struct String String;
+typedef struct Struct_type Struct_type;
 
 typedef enum {
 		INT,	// int
 		CHAR,	// chars
 		PTR,	// pointer
 		ADDR,	// address
-		ARRAY,	// array
 		ARRAY_INT,	// array int
 		ARRAY_CHAR, // array char
+		ARRAY_STRUCT,	// array struct
 		STRUCT, 
 } Ty;
 
@@ -106,6 +107,9 @@ struct Node{
 	Node *defnode;
 	Node *par;
 	int var_size;
+	Struct_type *sty_s;
+	Struct_type *sty_e;
+	Struct_type *defstruct;
 	Node *member;
 	int member_size;
 };
@@ -131,6 +135,14 @@ struct String {
 	int len;
 	String *next;
 	int size;
+};
+
+struct Struct_type{
+	char *str;
+	int len;
+	LVar *member;
+	int member_size;
+	Struct_type *next;
 };
 
 void program();
@@ -165,6 +177,8 @@ extern LVar *globals_s;
 extern LVar *globals_e;
 extern String *string_s;
 extern String *string_e;
+extern Struct_type *sty_s;
+extern Struct_type *sty_e;
 
 /* ~~~~~ main.c ~~~~~ */
 
@@ -174,6 +188,7 @@ void error(char *str);
 extern Token *token;
 extern char *user_input;
 extern int main_flag;
+extern Node *ignore;
 
 /* ~~~~~ codegen.c ~~~~~ */
 

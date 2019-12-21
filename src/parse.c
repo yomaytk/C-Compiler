@@ -6,6 +6,8 @@
 #include <string.h>
 #include "mss9cc.h"
 
+Node *cur_node;
+
 LVar *function_set_s;
 LVar *function_set_e;
 
@@ -15,8 +17,8 @@ LVar *globals_e;
 String *string_s;
 String *string_e;
 
-Node *struct_node_s;
-Node *struct_node_e;
+Struct_type *sty_s;
+Struct_type *sty_e;
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進めて
 // 真を返す。それ以外の場合には偽を返す。
@@ -51,6 +53,15 @@ Token *consume_ident(){
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
 		return NULL;
 	}
+	return token;
+}
+
+Token *consume_ident_move(){
+
+	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
+		return NULL;
+	}
+	token = token->next;
 	return token;
 }
 
@@ -121,29 +132,6 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	return;
 }
 
-void add_structlval(token *tok, Node *node, Node *member, Ty ty, int char_cnt, int struct_size){
-	if(ty == INT){
-		member->offset = node->member_size;
-		node->member_size += 4;
-	}else if(ty == CHAR){
-		if(char_cnt == 0){
-			member->offset = node->member_size;
-			node->member_size += 4;
-		}else{
-			member->offset = node->member_size - 4 + char_cnt;
-		}
-	}else if(ty == STRUCT){
-		member->offset = node->member_size;
-		node->member_size += struct_size;
-	}else if(ty == PTR){
-		member->offset = node->member_size;
-		node->member_size += 8;
-	}
-	strncpy(member->varname, tok->str, tok->len);
-	*(member->varname + tok->len) = '\0';
-	return;
-}
-
 /* グローバル環境にLVarを追加 */
 void add_gblvar(Token *tok, Node *node){
 	LVar *lvar = calloc(1, sizeof(LVar));
@@ -157,6 +145,50 @@ void add_gblvar(Token *tok, Node *node){
 	globals_e = lvar;
 	return;
 }
+
+// Struct_typeに新しいmemberを追加
+void add_struct_member(Token *tok, Struct_type *Sty, LVar *member, Ty ty, int char_cnt, int ty_size){
+	
+	if(ty == CHAR){
+		if(char_cnt == 0){
+			member->offset = Sty->member_size;
+			Sty->member_size += 4;
+		}else{
+			member->offset = Sty->member_size - 4 + char_cnt;
+		}
+	}else{
+		member->offset = Sty->member_size;
+		Sty->member_size += ty_size;
+	}
+	member->name = tok->str;
+	member->len = tok->len;
+
+	return;
+}
+
+// 新しい型structを追加
+void add_struct(Struct_type *Sty, int flag){
+
+	Struct_type *ssty_s;
+	Struct_type *ssty_e;
+
+	if(flag == 0){
+		ssty_s = sty_s;
+		ssty_e = sty_e;
+	}else{
+		ssty_s = cur_node->sty_s;
+		ssty_e = cur_node->sty_e;
+	}
+	if(!ssty_s){
+		ssty_s = Sty;
+	}else{
+		ssty_e->next = Sty;
+	}
+	ssty_e = Sty;
+	
+	return;
+}
+
 
 /* 現在対象の環境から対象の変数を返す */
 LVar *find_lvar(Token *tok, Node *node){
@@ -182,6 +214,20 @@ LVar *find_gblvar(Token *tok){
 	return NULL;
 }
 
+Struct_type *find_structtype(Token *tok, int flag){
+
+	Struct_type *ssty_s;
+	if(flag == 0)	ssty_s = sty_s;
+	else 	ssty_s = cur_node->sty_s;
+
+	for(Struct_type *sty = ssty_s;sty;sty = sty->next){
+		if(sty->len == tok->len && memcmp(sty->str, tok->str, tok->len) == 0){
+			return sty;
+		}
+	}
+	return NULL;
+}
+
 
 Node *find_tree_type(Node *node){
 	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
@@ -193,47 +239,6 @@ Node *find_tree_type(Node *node){
 	else if(lhs)	return lhs;
 	else if(rhs)	return rhs;
 }
-
-char* nodekind2str(Nodekind kind){
-	if(kind == ND_ADD)	return "+";
-	else if(kind == ND_SUB)	return "-";
-	else if(kind == ND_MUL)	return "*";
-	else if(kind == ND_DIV)	return "/";
-	else if(kind == ND_NUM)	return "digit";
-	else if(kind == ND_EQU) return "==";
-	else if(kind == ND_NOTEQU) return "!=";
-	else if(kind == ND_RIGHTINE) return "<";
-	else if(kind == ND_RINEEQU) return "<=";
-	else if(kind == ND_LEFTINE) return ">";
-	else if(kind == ND_LINEEQU)	return ">=";
-	else if(kind == ND_ASSIGN)	return "=";
-	else if(kind == ND_LVAR)	return "locvar";
-	else if(kind == ND_SEMICORO)	return ";";
-	else if(kind == ND_RETURN)	return "return";
-	else if(kind == ND_IF)	return "if";
-	else if(kind == ND_ELSE)	return "else";
-	else if(kind == ND_WHILE)	return "while";
-	else if(kind == ND_FOR)		return "for";
-	else if(kind == ND_FOREXPR)	return "forexpr";
-	else if(kind == ND_BLOCK)	return "{}";
-	else if(kind == ND_APP)	return "app";
-	else if(kind == ND_FUN)	return "fun";
-	else return "nodekind2str error";
-}
-
-char *syntax_debug(Node *code){
-	
-	char *str[2];
-	char *stra = calloc(1, sizeof(char));
-	Nodekind kind = code->kind;
-
-	for(int i = 0;i < 2;i++)	str[i] = "NULL";
-	if(code->lhs)	str[0] = syntax_debug(code->lhs);
-	if(code->lhs)	str[1] = syntax_debug(code->lhs);
-	sprintf(stra, "(%s, %s, %s)", nodekind2str(kind), str[0], str[1]);
-	return stra;
-}
-
 
 /*
 	exec parse
@@ -312,13 +317,14 @@ Node *stmt(){
 		Node *vec = node;
 		while(!consume("}")){
 			Node *vector = stmt();
+			if(!vector)	continue;
 			vec->vector = vector;
 			vec = vec->vector;
 		}
 		return node;
 	}else{
 		node = expr();
-		if(node->kind == ND_FUN) return node;
+		if(node && node->kind == ND_FUN) return node;
 	}
 	expect(';');
 	return node;
@@ -488,54 +494,70 @@ Node *primary(){
 		return node;
 	}else if(consume_tokenstay("struct")){
 		// 構造体の型定義か変数定義か判定
-		Token *token2 = token;
+		Token *token2 = token->next;
 		bool flag = false;
-		while(true){
+		for(;;token = token->next){
 			if(consume_tokenstay("{")){
 				break;
 			}else if(consume_tokenstay(";")){
 				flag = true;
 				break;
 			}
-			token = token->next;
 		}
-		token = token2;
 		// =====
+		token = token2;
 		if(!flag){
-			Token *tag = consume_ident();
-			if(!tag)	error_at("構造体定義にタグ名がありません.\n");
+			Token *tag = consume_ident_move();
+			if(!tag)	error_at(token->str, "構造体定義にタグ名がありません.\n");
 			expect('{');
-			Node *node = calloc(1, sizeof(Node));
-			// メンバ定義
+			Struct_type *Sty = calloc(1, sizeof(Struct_type));
+			// すべてのmemberの追加
 			int char_cnt = 0;
-			for(Node *member = node->member;!consume("}");member = member->member){
-				member = calloc(1, sizeof(Node));
+			for(LVar *member = Sty->member;!consume("}");member = member->next){
+				member = calloc(1, sizeof(LVar));
 				if(consume("int")){
-					Token *tok = consume_ident();
-					add_structlval(tok, node, member, INT, -1, -1);
+					Token *tok = consume_ident_move();
+					if(consume("*"))	add_struct_member(tok, Sty, member, PTR, -1, 8);
+					else	add_struct_member(tok, Sty, member, INT, -1, 4);
 					char_cnt = 0;
 				}else if(consume("char")){
-					Token *tok = consume_ident();
-					add_structlval(tok, node, member, CHAR, char_cnt, -1);
-					if(char_cnt  == 3)	char_cnt = 0;
-					else 	char_cnt++;
+					Token *tok = consume_ident_move();
+					if(consume("*"))	{
+						add_struct_member(tok, Sty, member, PTR, -1, 8);
+						char_cnt = 0;
+					}else{
+						add_struct_member(tok, Sty, member, CHAR, char_cnt, 1);
+						if(char_cnt  == 3)	char_cnt = 0;
+						else 	char_cnt++;
+					}
 				}else if(consume("struct")){
-					Token *tag_tok = consume_ident();
-					Token *tok = consume_ident();
-					LVar *lvar = find_structval(tag_tok);
-					if(!lvar)	lvar = find_gblvar(tag_tok);
-					if(!lvar)	error_at(tok->str, "定義されていない変数の参照です.\n");
-					add_structlval(tok, node, member, STRUCT, -1, lvar->defnode->member_size);
+					Token *tag_tok = consume_ident_move();
+					Token *tok = consume_ident_move();
+					Struct_type *tarsty;
+					if(cur_node){
+						tarsty = find_structtype(tag_tok, 1);
+						if(!tarsty)	tarsty = find_structtype(tag_tok, 0);
+					}else{
+						tarsty = find_structtype(tag_tok, 0);
+					}
+					if(!tarsty)	error_at(tag_tok->str, "定義されていない構造体型の参照です.\n");
+					if(consume("*"))	add_struct_member(tok, Sty, member, STRUCT, -1, tarsty->member_size);
+					else 	add_struct_member(tok, Sty, member, PTR, -1, 8);
 					char_cnt = 0;
 				}
 				expect(';');
 			}
-			expect(';');
+			// =====
+			if(cur_node)	add_struct(Sty, 1);
+			else 	add_struct(Sty, 0);
+
+			return ignore;
 		}
 	}
 	// 型定義がある場合の処理
 	if(token->len == 3 && strncmp(token->str, "int", token->len) == 0)	type_select = 1;
 	else if(token->len == 4 && strncmp(token->str, "char", token->len) == 0)	type_select = 2;
+	else if(token->len == 6 && strncmp(token->str, "struct", token->len) == 0)	type_select = 3;
 	if(type_select > 0){
 		token = token->next;
 		Type *type = this_type;
@@ -546,6 +568,7 @@ Node *primary(){
 		}
 		if(type_select == 1)	type->ty = INT;
 		else if(type_select == 2)	type->ty = CHAR;
+		else if(type_select = 3)	type->ty = STRUCT;
 		if(this_type->ty == PTR){
 			par->kind = ND_DEREF;
 			par->type = this_type;
@@ -564,6 +587,7 @@ Node *primary(){
 		node->type = calloc(1, sizeof(Type));
 		if(type_select == 1)	node->type->ty = INT;
 		else if(type_select == 2)	node->type->ty = CHAR;
+		else if(type_select == 3)	node->type->ty = STRUCT;
 		node->type->ptr_size = ptr_size;
 		/* ===== */
 		Token *token2 = token;
@@ -573,7 +597,7 @@ Node *primary(){
 		*(node->varname+token2->len) = '\0';
 		/* 関数 */
 		if(consume("(")){
-			/* 関数の定義または呼び出しの判断 */
+			/* 関数の定義または呼び出しの判定 */
 			token2 = token;
 			for(;!consume_moveon(")");){
 				if(!token->next)	error_at(token->str, "consume_moveonで不正なtokenが検出されました.");
@@ -598,12 +622,14 @@ Node *primary(){
 						Node *params_node = calloc(1, sizeof(Node));
 						params_node->type = calloc(1, sizeof(Type));
 						if(strncmp(token->str, "char *", token->len+2) == 0
-								|| strncmp(token->str, "int *", token->len+2) == 0){
+								|| strncmp(token->str, "int *", token->len+2) == 0
+								|| strncmp(token->str, "struct *", token->len+2) == 0){
 							ty = PTR;
 							token = token->next;
 						}
 						else if(strncmp(token->str, "int", token ->len) == 0)	ty = INT;
 						else if(strncmp(token->str, "char", token->len) == 0)	ty = CHAR;
+						else if(strncmp(token->str, "struct", token->len) == 0)	ty = STRUCT;
 						else	error_at(token->str, "関数定義の引数の型が不正です.");
 						token = token->next;
 						Token *tok = consume_ident();
@@ -670,6 +696,7 @@ Node *primary(){
 				par->type->ptr_to = this_type;
 				if(type_select == 1)	node->type->ty = ARRAY_INT;
 				else if(type_select == 2)	node->type->ty = ARRAY_CHAR;
+				else if(type_select == 3)	node->type->ty = ARRAY_STRUCT;
 				node->type->array_size = size;
 				par->lhs = node;
 				node->par = par;
@@ -711,7 +738,12 @@ Node *primary(){
 		// グローバル環境のとき
 		if(!cur_node){
 			if(type_select > 0){
-				add_gblvar(tok, node);
+				if(type_select == 3){
+					Struct_type *sty = find_structtype(tok, 0);
+					if(!sty)	error_at(tok->str, "定義されていない型の参照です.\n");
+					node->defstruct = sty;
+					add_gblvar(tok, node);
+				}else	add_gblvar(tok, node);
 				node->kind = ND_GBLVAR;
 				return node;
 			}else{
@@ -724,7 +756,13 @@ Node *primary(){
 			// 変数定義のとき
 			if(type_select > 0){
 				if(!lvar){
-					add_lvar(tok, node, 0, node->type->ty);
+					if(type_select == 3){
+						Struct_type *sty = find_structtype(tok, 1);
+						if(!sty)	sty = find_structtype(tok, 0);
+						if(!sty)	error_at(tok->str, "定義されていない型の参照です.\n");
+						node->defstruct = sty;
+						add_lvar(tok, node, 0, STRUCT);
+					}else 	add_lvar(tok, node, 0, node->type->ty);
 					node->kind = ND_LVAR;
 					return node;
 				}else{
