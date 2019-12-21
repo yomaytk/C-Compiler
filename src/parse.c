@@ -61,8 +61,9 @@ Token *consume_ident_move(){
 	if(token->kind != TK_IDENT || token->str[0] > 'z' || token->str[0] < 'a'){
 		return NULL;
 	}
+	Token *tok = token;
 	token = token->next;
-	return token;
+	return tok;
 }
 
 // 次のトークンが期待している記号のときには、トークンを1つ読み進める。
@@ -169,23 +170,21 @@ void add_struct_member(Token *tok, Struct_type *Sty, LVar *member, Ty ty, int ch
 // 新しい型structを追加
 void add_struct(Struct_type *Sty, int flag){
 
-	Struct_type *ssty_s;
-	Struct_type *ssty_e;
-
 	if(flag == 0){
-		ssty_s = sty_s;
-		ssty_e = sty_e;
+		if(!sty_s){
+			sty_s = Sty;
+		}else{
+			sty_e->next = Sty;
+		}
+		sty_e = Sty;
 	}else{
-		ssty_s = cur_node->sty_s;
-		ssty_e = cur_node->sty_e;
+		if(!cur_node->sty_s){
+			cur_node->sty_s = Sty;
+		}else{
+			cur_node->sty_e->next = Sty;
+		}
+		cur_node->sty_e = Sty;
 	}
-	if(!ssty_s){
-		ssty_s = Sty;
-	}else{
-		ssty_e->next = Sty;
-	}
-	ssty_e = Sty;
-	
 	return;
 }
 
@@ -324,7 +323,7 @@ Node *stmt(){
 		return node;
 	}else{
 		node = expr();
-		if(node && node->kind == ND_FUN) return node;
+		if(node->kind == ND_FUN) return node;
 	}
 	expect(';');
 	return node;
@@ -511,18 +510,24 @@ Node *primary(){
 			if(!tag)	error_at(token->str, "構造体定義にタグ名がありません.\n");
 			expect('{');
 			Struct_type *Sty = calloc(1, sizeof(Struct_type));
+			strncpy(Sty->str, tag->str, tag->len);
+			*(Sty->str + tag->len) = '\0';
+			Sty->len = tag->len;
 			// すべてのmemberの追加
 			int char_cnt = 0;
 			for(LVar *member = Sty->member;!consume("}");member = member->next){
 				member = calloc(1, sizeof(LVar));
+				bool pflag = false;
 				if(consume("int")){
+					if(consume("*"))	pflag = true;
 					Token *tok = consume_ident_move();
-					if(consume("*"))	add_struct_member(tok, Sty, member, PTR, -1, 8);
+					if(pflag)	add_struct_member(tok, Sty, member, PTR, -1, 8);
 					else	add_struct_member(tok, Sty, member, INT, -1, 4);
 					char_cnt = 0;
 				}else if(consume("char")){
+					if(consume("*"))	pflag = true;
 					Token *tok = consume_ident_move();
-					if(consume("*"))	{
+					if(pflag)	{
 						add_struct_member(tok, Sty, member, PTR, -1, 8);
 						char_cnt = 0;
 					}else{
@@ -532,6 +537,7 @@ Node *primary(){
 					}
 				}else if(consume("struct")){
 					Token *tag_tok = consume_ident_move();
+					if(consume("*"))	pflag = true;
 					Token *tok = consume_ident_move();
 					Struct_type *tarsty;
 					if(cur_node){
@@ -541,8 +547,8 @@ Node *primary(){
 						tarsty = find_structtype(tag_tok, 0);
 					}
 					if(!tarsty)	error_at(tag_tok->str, "定義されていない構造体型の参照です.\n");
-					if(consume("*"))	add_struct_member(tok, Sty, member, STRUCT, -1, tarsty->member_size);
-					else 	add_struct_member(tok, Sty, member, PTR, -1, 8);
+					if(pflag) 	add_struct_member(tok, Sty, member, PTR, -1, 8);
+					else	add_struct_member(tok, Sty, member, STRUCT, -1, tarsty->member_size);
 					char_cnt = 0;
 				}
 				expect(';');

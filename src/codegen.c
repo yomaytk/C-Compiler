@@ -57,7 +57,7 @@ void gen_gval(Node *node){
 
 void gen(Node *node){
 
-	if(node == NULL)	return;
+	if(node == ignore)	return;
 	
 	Nodekind kind = node->kind;
 

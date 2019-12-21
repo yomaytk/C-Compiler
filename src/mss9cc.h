@@ -138,7 +138,7 @@ struct String {
 };
 
 struct Struct_type{
-	char *str;
+	char str[100];
 	int len;
 	LVar *member;
 	int member_size;
