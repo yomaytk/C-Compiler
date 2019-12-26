@@ -123,9 +123,11 @@ void add_lvar(Token *tok, Node *node, int param_f, Ty ty){
 	// スタック上の変数領域の範囲を更新
 	if(ty == ARRAY_CHAR)	cur_node->var_size += 1*node->type->array_size;
 	else if(ty == ARRAY_INT)	cur_node->var_size += 4*node->type->array_size;
+	else if(ty == ARRAY_STRUCT)	cur_node->var_size += (node->var_size) * (node->type->array_size);
 	else if(ty == PTR || ty == ADDR || node->par)	cur_node->var_size += 8;
 	else if(ty == INT)	cur_node->var_size += 4;
 	else if(ty == CHAR)	cur_node->var_size += 1;
+	else if(ty == STRUCT)	cur_node->var_size += node->defstruct->member_size;
 	// =====
 	lvar->offset = cur_node->var_size;
 	node->offset = lvar->offset;
@@ -213,6 +215,17 @@ LVar *find_gblvar(Token *tok){
 	return NULL;
 }
 
+Node *find_tree_type(Node *node){
+	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
+		|| node->kind == ND_ADDR || node->kind == ND_GBLVAR)	return node;
+	Node *lhs, *rhs;
+	if(node->lhs)	lhs = find_tree_type(node->lhs);
+	if(node->rhs)	rhs = find_tree_type(node->rhs);
+	if(!lhs && !rhs)	return NULL;
+	else if(lhs)	return lhs;
+	else if(rhs)	return rhs;
+}
+
 Struct_type *find_structtype(Token *tok, int flag){
 
 	Struct_type *ssty_s;
@@ -227,16 +240,16 @@ Struct_type *find_structtype(Token *tok, int flag){
 	return NULL;
 }
 
-
-Node *find_tree_type(Node *node){
-	if(node->kind == ND_LVAR || node->kind == ND_APP || node->kind == ND_DEREF
-		|| node->kind == ND_ADDR || node->kind == ND_GBLVAR)	return node;
-	Node *lhs, *rhs;
-	if(node->lhs)	lhs = find_tree_type(node->lhs);
-	if(node->rhs)	rhs = find_tree_type(node->rhs);
-	if(!lhs && !rhs)	return NULL;
-	else if(lhs)	return lhs;
-	else if(rhs)	return rhs;
+Struct_type *exe_find_structtype(Token *tag_tok){
+	Struct_type *tarsty;
+	if(cur_node){
+		tarsty = find_structtype(tag_tok, 1);
+		if(!tarsty)	tarsty = find_structtype(tag_tok, 0);
+	}else{
+		tarsty = find_structtype(tag_tok, 0);
+	}
+	if(!tarsty)	error_at(tag_tok->str, "定義されていない構造体型の参照です.\n");
+	return tarsty;
 }
 
 /*
@@ -493,7 +506,7 @@ Node *primary(){
 		return node;
 	}else if(consume_tokenstay("struct")){
 		// 構造体の型定義か変数定義か判定
-		Token *token2 = token->next;
+		Token *token2 = token;
 		bool flag = false;
 		for(;;token = token->next){
 			if(consume_tokenstay("{")){
@@ -503,9 +516,10 @@ Node *primary(){
 				break;
 			}
 		}
-		// =====
 		token = token2;
+		// =====
 		if(!flag){
+			token = token->next;	// tokenをタグ名まで進める
 			Token *tag = consume_ident_move();
 			if(!tag)	error_at(token->str, "構造体定義にタグ名がありません.\n");
 			expect('{');
@@ -540,13 +554,7 @@ Node *primary(){
 					if(consume("*"))	pflag = true;
 					Token *tok = consume_ident_move();
 					Struct_type *tarsty;
-					if(cur_node){
-						tarsty = find_structtype(tag_tok, 1);
-						if(!tarsty)	tarsty = find_structtype(tag_tok, 0);
-					}else{
-						tarsty = find_structtype(tag_tok, 0);
-					}
-					if(!tarsty)	error_at(tag_tok->str, "定義されていない構造体型の参照です.\n");
+					tarsty = exe_find_structtype(tag_tok);
 					if(pflag) 	add_struct_member(tok, Sty, member, PTR, -1, 8);
 					else	add_struct_member(tok, Sty, member, STRUCT, -1, tarsty->member_size);
 					char_cnt = 0;
@@ -574,7 +582,7 @@ Node *primary(){
 		}
 		if(type_select == 1)	type->ty = INT;
 		else if(type_select == 2)	type->ty = CHAR;
-		else if(type_select = 3)	type->ty = STRUCT;
+		else if(type_select == 3)	type->ty = STRUCT;
 		if(this_type->ty == PTR){
 			par->kind = ND_DEREF;
 			par->type = this_type;
@@ -582,6 +590,11 @@ Node *primary(){
 	}
 	// ===== 
 	Token *tok = consume_ident();
+	Struct_type *tarsty;
+	if(type_select == 3){
+		Token *tag_tok = consume_ident_move();
+		tarsty = exe_find_structtype(tag_tok);
+	}
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
 		/* ポインタ定義の場合は親ノードを付ける */
@@ -589,12 +602,14 @@ Node *primary(){
 			par->lhs = calloc(1, sizeof(Node));
 			node->par = par;
 		}
-		/* 変数の型を決める(定義時のみ) */
+		/* 変数の型を決める(定義時のみ有効) */
 		node->type = calloc(1, sizeof(Type));
 		if(type_select == 1)	node->type->ty = INT;
 		else if(type_select == 2)	node->type->ty = CHAR;
-		else if(type_select == 3)	node->type->ty = STRUCT;
-		node->type->ptr_size = ptr_size;
+		else if(type_select == 3)	{
+			node->type->ty = STRUCT;
+			node->defstruct = tarsty;
+		}node->type->ptr_size = ptr_size;
 		/* ===== */
 		Token *token2 = token;
 		token = token->next;
@@ -753,6 +768,7 @@ Node *primary(){
 				node->kind = ND_GBLVAR;
 				return node;
 			}else{
+				// 変更の余地あり
 				error_at(tok->str, "グローバル環境で変数の参照はできません.\n");
 			}
 		// 関数環境のとき
@@ -787,7 +803,7 @@ Node *primary(){
 				node->type->array_size = lvar->defnode->type->array_size;
 				return node;
 			}else{
-				error_at(token->str, "定義されていない変数の参照です.");
+				error_at(tok->str, "定義されていない変数の参照です.");
 			}
 		}
 	}else if(type_select > 0){

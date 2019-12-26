@@ -36,8 +36,8 @@ compile_err() {
 echo -e "\n\e[32m=== try test start ===\e[m\n"
 
 # struct
-try 10 "int main(){ struct tag { int a; int b; char c;}; return 10; }"
-try 10 "struct tag1{ int a; char b; int a; }; int main(){ struct tag2 { int a; char b; int *p; char *q; struct tag1 *x; }; return 10;}"
+try 10 "int main(){ struct tag { int a; int b; char c;}; struct tag tag1; return 10; }"
+try 10 "struct tag1{ int a; char b; int a; }; int main(){ struct tag1 tag11; struct tag2 { int a; char b; int *p; char *q; struct tag1 *x; }; return 10;}"
 
 # basic syntax and various functions
 try 21 "int main(){ int a; a = 20; return (a+1);}"
