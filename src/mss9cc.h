@@ -97,7 +97,7 @@ struct Node{
 	Node *params;
 	int val;
 	int offset;
-	char varname[100];
+	char str[100];
 	int labelcnt[100];
 	LVar *locals_s;
 	LVar *locals_e;
@@ -112,6 +112,7 @@ struct Node{
 	Struct_type *defstruct;
 	Node *member;
 	int member_size;
+	Node *structpar;
 };
 
 struct LVar {
@@ -121,6 +122,7 @@ struct LVar {
 	int offset;
 	Node *defnode;
 	Ty params_ty;
+	Ty ty;
 };
 
 struct Type {

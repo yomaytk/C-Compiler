@@ -165,6 +165,7 @@ void add_struct_member(Token *tok, Struct_type *Sty, LVar *member, Ty ty, int ch
 	}
 	member->name = tok->str;
 	member->len = tok->len;
+	member->ty = ty;
 
 	return;
 }
@@ -241,6 +242,8 @@ Struct_type *find_structtype(Token *tok, int flag){
 }
 
 Struct_type *exe_find_structtype(Token *tag_tok){
+
+	if(!tag_tok)	return NULL;
 	Struct_type *tarsty;
 	if(cur_node){
 		tarsty = find_structtype(tag_tok, 1);
@@ -250,6 +253,11 @@ Struct_type *exe_find_structtype(Token *tag_tok){
 	}
 	if(!tarsty)	error_at(tag_tok->str, "定義されていない構造体型の参照です.\n");
 	return tarsty;
+}
+
+Struct_type *find_member(Struct_type *sty, Token *member_tok){
+
+
 }
 
 /*
@@ -529,9 +537,10 @@ Node *primary(){
 			Sty->len = tag->len;
 			// すべてのmemberの追加
 			int char_cnt = 0;
-			for(LVar *member = Sty->member;!consume("}");member = member->next){
-				member = calloc(1, sizeof(LVar));
+			LVar *cur_member;
+			while(!consume("}")){
 				bool pflag = false;
+				LVar *member = calloc(1, sizeof(LVar));
 				if(consume("int")){
 					if(consume("*"))	pflag = true;
 					Token *tok = consume_ident_move();
@@ -559,12 +568,16 @@ Node *primary(){
 					else	add_struct_member(tok, Sty, member, STRUCT, -1, tarsty->member_size);
 					char_cnt = 0;
 				}
+				// printf("%s\n", member->name);
 				expect(';');
+				if(!cur_member)	Sty->member = member;
+				else	cur_member->next = member;
+				cur_member = member;
 			}
 			// =====
 			if(cur_node)	add_struct(Sty, 1);
 			else 	add_struct(Sty, 0);
-
+			// printf("rrerererere\n");
 			return ignore;
 		}
 	}
@@ -590,10 +603,12 @@ Node *primary(){
 	}
 	// ===== 
 	Token *tok = consume_ident();
+	Token *tag_tok = tok;
 	Struct_type *tarsty;
 	if(type_select == 3){
-		Token *tag_tok = consume_ident_move();
 		tarsty = exe_find_structtype(tag_tok);
+		token = token->next;
+		tok = consume_ident();
 	}
 	if(tok){
 		Node *node = calloc(1, sizeof(Node));
@@ -614,8 +629,8 @@ Node *primary(){
 		Token *token2 = token;
 		token = token->next;
 		/* 変数名の保存*/
-		strncpy(node->varname, token2->str, token2->len);
-		*(node->varname+token2->len) = '\0';
+		strncpy(node->str, token2->str, token2->len);
+		*(node->str+token2->len) = '\0';
 		/* 関数 */
 		if(consume("(")){
 			/* 関数の定義または呼び出しの判定 */
@@ -760,8 +775,8 @@ Node *primary(){
 		if(!cur_node){
 			if(type_select > 0){
 				if(type_select == 3){
-					Struct_type *sty = find_structtype(tok, 0);
-					if(!sty)	error_at(tok->str, "定義されていない型の参照です.\n");
+					Struct_type *sty = find_structtype(tag_tok, 0);
+					if(!sty)	error_at(tag_tok->str, "定義されていない型の参照です.\n");
 					node->defstruct = sty;
 					add_gblvar(tok, node);
 				}else	add_gblvar(tok, node);
@@ -779,8 +794,8 @@ Node *primary(){
 			if(type_select > 0){
 				if(!lvar){
 					if(type_select == 3){
-						Struct_type *sty = find_structtype(tok, 1);
-						if(!sty)	sty = find_structtype(tok, 0);
+						Struct_type *sty = find_structtype(tag_tok, 1);
+						if(!sty)	sty = find_structtype(tag_tok, 0);
 						if(!sty)	error_at(tok->str, "定義されていない型の参照です.\n");
 						node->defstruct = sty;
 						add_lvar(tok, node, 0, STRUCT);
@@ -801,6 +816,30 @@ Node *primary(){
 				node->defnode = lvar->defnode;
 				node->type->ty = lvar->defnode->type->ty;	
 				node->type->array_size = lvar->defnode->type->array_size;
+				// 構造体のメンバ参照
+				if(consume(".")){
+					// printf("uiiuuiiuiuiu\n");
+					Token *member_tok = consume_ident_move();
+					LVar *member = tarsty->member;
+					for(;member;member = member->next){
+						if(member->len == member_tok->len && strncmp(member_tok->str, member->name, member_tok->len) == 0){
+							break;
+						}
+						// printf("klkllkl\n");
+					}
+					// printf("jijijjji\n");
+					if(!member_tok)	error_at(token->str, "構造体の不正なメンバ参照です.\n");
+					if(!member)	error_at(member_tok->str, "構造体の定義されていないメンバの参照です.\n");
+					Node *member_node = calloc(1, sizeof(Node));
+					member_node->kind = node->kind;
+					member_node->type = calloc(1, sizeof(Type));
+					member_node->type->ty = member->ty;
+					member_node->structpar = node;
+					strncpy(member_node->str, member_tok->str, member_tok->len);
+					*(member_node->str + member_tok->len) = '\0';
+					member_node->offset = node->offset - tarsty->member_size + member->offset;
+					return member_node;
+				}
 				return node;
 			}else{
 				error_at(tok->str, "定義されていない変数の参照です.");

@@ -50,7 +50,7 @@ void gen_lval(Node *node){
 }
 
 void gen_gval(Node *node){
-	printf("\tlea\trax, %s\n", node->varname);
+	printf("\tlea\trax, %s\n", node->str);
 	printf("\tpush\trax\n");
 	return;
 }
@@ -192,16 +192,16 @@ void gen(Node *node){
 		for(int i = paramscnt;i >= 1;i--){
 			printf("\tpop\t%s\n", reg64_name[i-1]);
 		}
-		printf("\tcall\t%s\n", node->varname);
+		printf("\tcall\t%s\n", node->str);
 		printf("\tpush\trax\n");
 		return;
 	}
 
 	if(kind == ND_FUN){
-		printf("%s:\n", node->varname);
+		printf("%s:\n", node->str);
 		printf("\tpush\trbp\n");
 		printf("\tmov\trbp, rsp\n");
-		if(strncmp(node->varname, "main", 4) == 0){
+		if(strncmp(node->str, "main", 4) == 0){
 			main_flag = 1;
 		}
 		printf("\tsub\trsp, %d\n", node->var_size);
@@ -247,7 +247,7 @@ void gen(Node *node){
 		// 変数定義のとき
 		if(!node->defnode){
 			printf(".bss\n");
-			printf("%s:\n", node->varname);
+			printf("%s:\n", node->str);
 			if(node->type->ty == ARRAY_INT)	printf("\t.zero %ld\n", node->type->array_size*4);
 			else if(node->type->ty == ARRAY_CHAR)	printf("\t.zero %ld\n", node->type->array_size*1);
 			else if(node->par && (node->par->type->ty == PTR || node->par->type->ty == ADDR))	printf("\t.zero 8\n");

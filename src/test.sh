@@ -38,6 +38,8 @@ echo -e "\n\e[32m=== try test start ===\e[m\n"
 # struct
 try 10 "int main(){ struct tag { int a; int b; char c;}; struct tag tag1; return 10; }"
 try 10 "struct tag1{ int a; char b; int a; }; int main(){ struct tag1 tag11; struct tag2 { int a; char b; int *p; char *q; struct tag1 *x; }; return 10;}"
+try 10 "int main(){ struct tt { int a; int b; char c; }; struct tt t; t.a = 10; return t.a; }"
+try 18 "struct xx { int a; int b; char c; char d; int e; char f; char g; }; int main(){ struct xx x; x.a=3; x.b=5; x.c = 2; x.d = 1; x.e = 5; x.f = 1; x.g = 2; return x.a+x.b+x.c+x.d+x.e+x.f+x.g; }"
 
 # basic syntax and various functions
 try 21 "int main(){ int a; a = 20; return (a+1);}"
