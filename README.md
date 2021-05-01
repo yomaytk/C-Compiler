@@ -10,5 +10,3 @@ https://www.sigbus.info/compilerbook
 
 - `make clean` to clean
 
-## demo
-![demo](https://user-images.githubusercontent.com/45335576/115151597-8dddb800-a0a8-11eb-8503-1f47d40cb385.gif)
